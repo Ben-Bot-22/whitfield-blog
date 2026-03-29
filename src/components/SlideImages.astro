@@ -1,0 +1,22 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  left: ImageMetadata;
+  right: ImageMetadata;
+  leftAlt: string;
+  rightAlt: string;
+}
+
+const { left, right, leftAlt, rightAlt } = Astro.props;
+---
+
+<div class="slide-images flex flex-col sm:flex-row gap-4 my-8">
+  <div class="flex-1">
+    <Image src={left} alt={leftAlt} class="rounded-xl w-full h-auto" />
+  </div>
+  <div class="flex-1">
+    <Image src={right} alt={rightAlt} class="rounded-xl w-full h-auto" />
+  </div>
+</div>

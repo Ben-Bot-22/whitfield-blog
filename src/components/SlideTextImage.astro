@@ -1,0 +1,48 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  imageClass?: string;
+  size?: "small" | "small-medium" | "medium" | "normal";
+}
+
+const { image, alt, imageClass = "", size = "normal" } = Astro.props;
+const sizeMap = {
+  "small": "md:w-2/5",        // 40%
+  "small-medium": "md:w-[45%]", // 45%
+  "medium": "md:w-1/2",       // 50%
+  "normal": "md:w-3/5"        // 60%
+};
+const sizeClass = sizeMap[size];
+---
+
+<div class="slide-text-image flex flex-col md:flex-row gap-6 my-8 items-center">
+  <div class="text-content md:w-2/5">
+    <slot />
+  </div>
+  <div class="md:flex-1 flex justify-end">
+    <div class:list={["image-content", sizeClass]}>
+      <Image src={image} alt={alt} class:list={["rounded-xl w-full h-auto", imageClass]} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .slide-text-image :global(h2),
+  .slide-text-image :global(h3) {
+    margin-top: 0;
+  }
+
+  .slide-text-image :global(ul) {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+
+  .slide-text-image :global(li) {
+    margin: 0.25rem 0;
+  }
+</style>

@@ -1,0 +1,495 @@
+---
+title: "Is Claude Code Actually Better? 1,820 Hours of Data"
+description: "I tracked every hour for 22 months building a web app and chrome extension. Here's what 1,820 hours and 1,387 commits reveal about Claude Code's actual impact on development velocity."
+pubDate: 2025-12-08
+---
+
+import DevelopmentTimeline from '../../components/visualizations/slide-0-development-timeline.jsx';
+import DebugSessionsChart from '../../components/visualizations/debug-sessions-chart.jsx';
+import CommitBehaviorChart from '../../components/visualizations/commit-behavior-chart.jsx';
+import DocumentationChart from '../../components/visualizations/documentation-chart.jsx';
+
+{/* TODO: Add YouTube embed when video is ready */}
+
+## What is Reazy?
+
+<a href="https://www.reazy.pro/" target="_blank" rel="noopener noreferrer">Reazy</a> is a text-to-speech app that lets you listen to anything you read. Chrome extension, web app—you upload a document or visit a webpage, and it reads it to you with custom AI voices.
+
+It's the test case for this analysis. I've been building it solo for over 2.5 years, and tracking my focused hours data for the last 22 months.
+
+The tech stack:
+- React and TypeScript on the frontend
+- Ionic Capacitor for mobile
+- Firebase for auth and storage
+- Google Cloud Run for inference
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-6 rounded-r my-6">
+  <div class="text-lg font-medium mb-2">Here's why this matters to me:</div>
+  <div class="text-slate-300">
+    I'm not drawing a salary while I build Reazy. And I scoped a little too large for my first web development project. Shipping faster means revenue. A reduction in debug time isn't just a stat — it's runway.
+  </div>
+</div>
+
+## The Setup
+
+<div class="bg-slate-900 text-white p-8 rounded-xl">
+  <div class="grid grid-cols-3 gap-8 text-center">
+    <div>
+      <div class="text-5xl md:text-7xl font-bold">22</div>
+      <div class="text-lg md:text-xl text-slate-400">months</div>
+    </div>
+    <div>
+      <div class="text-5xl md:text-7xl font-bold">1,820</div>
+      <div class="text-lg md:text-xl text-slate-400">hours tracked</div>
+    </div>
+    <div>
+      <div class="text-5xl md:text-7xl font-bold">1,387</div>
+      <div class="text-lg md:text-xl text-slate-400">commits</div>
+    </div>
+  </div>
+</div>
+
+<DevelopmentTimeline client:load />
+
+**22 months** of development. **1,820 hours** tracked in a spreadsheet. **1,387 commits** across five repositories.
+
+The question I want to answer: Did Claude Code actually make me more productive?
+
+Over those 22 months, I used four different tools:
+- GPT prompting / Copilot in early 2024
+- Cursor from November 2024 through January 2025
+- Windsurf from February through June 2025
+- Claude Code from July 2025 to now
+
+That gives us a natural experiment. Same developer, same codebase, using different agentic AI tools at different times.
+
+## Why This Is Hard to Measure
+
+<div class="bg-slate-900 text-white p-8 rounded-xl">
+  {/* The Problem Statement - moved to top */}
+  <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-red-400 mb-4">The Measurement Problem</h3>
+    <div class="text-slate-300 text-lg">
+      How do you compare 1 Claude commit (detailed) to 3 pre-Claude commits (terse)?
+    </div>
+    <div class="text-slate-400 mt-2">
+      They might represent the same amount of work—or completely different amounts.
+    </div>
+  </div>
+
+  {/* Commit Comparison */}
+  <div class="grid md:grid-cols-2 gap-6 mb-8">
+    {/* Pre-Claude Commit */}
+    <div class="bg-slate-800 rounded-lg p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+        <span class="text-gray-400 font-medium">Pre-Claude Commit (May 2025)</span>
+      </div>
+      <div class="bg-slate-900 rounded p-4 font-mono text-sm">
+        <div class="text-slate-400">[speak-to-me] bug fix: auth delayed settings sync</div>
+      </div>
+      <div class="mt-4 text-slate-500 text-sm">
+        <div>1 line</div>
+        <div>No context</div>
+        <div>No root cause</div>
+        <div>Future-you: "What was this?"</div>
+      </div>
+    </div>
+
+    {/* Claude Code Commit */}
+    <div class="bg-slate-800 rounded-lg p-6 border border-orange-500/30">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+        <span class="text-orange-400 font-medium">Claude Code Commit (Nov 2025)</span>
+      </div>
+      <div class="bg-slate-900 rounded p-4 font-mono text-sm max-h-64 overflow-y-auto">
+        <div class="text-orange-400">fix(search): add bypassCoordinator to scrollToIndex</div>
+        <div class="text-slate-400 mt-2">
+          Fixed nested scroll operation bug preventing search
+          navigation to distant chunks.
+        </div>
+        <div class="text-slate-500 mt-3 text-xs">
+          <div class="font-bold text-slate-400">Root Cause:</div>
+          <div>Search Phase 1 (priority 3.5) called scrollToIndex()</div>
+          <div>scrollToIndex created TOC operation (priority 3)</div>
+          <div>ScrollCoordinator dropped inner operation</div>
+        </div>
+        <div class="text-slate-500 mt-3 text-xs">
+          <div class="font-bold text-slate-400">Solution:</div>
+          <div>Added bypassCoordinator parameter</div>
+          <div>Search Phase 1 passes bypassCoordinator: true</div>
+        </div>
+      </div>
+      <div class="mt-4 text-slate-400 text-sm">
+        <div>30+ lines</div>
+        <div>Full context</div>
+        <div>Root cause documented</div>
+      </div>
+    </div>
+  </div>
+
+  {/* Complicating Factors */}
+  <div class="bg-slate-800 rounded-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold mb-4">Complicating Factors</h3>
+    <div class="space-y-3">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">📏</span>
+        <span class="font-medium">Commits vary in size</span>
+        <span class="text-slate-500">— Claude era commits are more detailed</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🧩</span>
+        <span class="font-medium">Features vary in complexity</span>
+        <span class="text-slate-500">— Stripe integration is not a bug fix</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xl">⏰</span>
+        <span class="font-medium">Hours varied week to week</span>
+        <span class="text-slate-500">— Some weeks 20h, some 40h</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xl">📈</span>
+        <span class="font-medium">Skills grew over 22 months</span>
+        <span class="text-slate-500">— Better developer doesn't mean better tools</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🏗️</span>
+        <span class="font-medium">Infrastructure was built early</span>
+        <span class="text-slate-500">— Early work enables later speed</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+Raw numbers are misleading. Here are four different ways to look at this data, each controlling for different complications.
+
+## Lens 1: Debug Session Duration
+
+Debug sessions are complexity-independent. When you're hunting a bug, the feature is already built. You're just trying to find the root cause. It takes however long it takes.
+
+This isolates "problem-solving speed" from "feature complexity."
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-4 mb-6 rounded-r">
+  <div class="text-xl md:text-2xl font-bold">~60% shorter debug sessions with Claude Code</div>
+  <div class="text-slate-400">Pre-Claude avg: 54h → Claude avg: 30h</div>
+</div>
+
+<DebugSessionsChart client:load />
+
+**The longest debug sessions in the pre-Claude era:**
+- **Lazy Loading Text Files** (Cursor, December 2024): 59 hours over 10 days. I had to restart completely after 30 hours when the first approach failed.
+- **Firebase Bundle Sizes** (Cursor/Windsurf): 52 hours total—and this one happened **twice**, in June 2024 and June 2025. Same root cause, one year apart.
+- **Web App Authentication** (Cursor, November 2024): 50+ hours over 11 days. I tried three different approaches before one worked.
+- **TanStack Virtual Migration** (Windsurf, February 2025): 40+ hours over 12 days.
+
+**Now look at the Claude Code era:**
+- **Search with Virtualization** (November 2025): 35 hours over 7 days—and it produced 1,600 lines of documentation.
+- **Scroll Coordinator** (November 2025): About 15 hours over 3 days, fully documented.
+
+Pre-Claude debug sessions averaged around 50 hours. Claude Code sessions averaged around 25 hours. That's roughly **60% shorter**.
+
+Debugging with Claude Code feels much easier.  It feels smarter (even though I used Claude in the cursor/windsurf).  Often pasting in the logs can solve it with a couple code-and-test iterations.
+
+One caveat is that the Tanstack Virtualization was infrastructure work that was more complex.  That said, I believe I would have implemented it faster using Claude Code.
+
+## Lens 2: Commit Behavior
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-4 mb-6 rounded-r">
+  <div class="text-xl md:text-2xl font-bold">Commits jumped from ~33/month to ~83/month</div>
+  <div class="text-slate-400">Not more output—a behavioral change in how I work</div>
+</div>
+
+<CommitBehaviorChart client:load />
+
+Before Claude Code, I averaged about 33 commits per month. After? About 83. That's a 150% increase.
+
+But here's the thing—this isn't "more output." It's a behavioral change.
+
+<div class="bg-slate-800 rounded-lg p-6 my-6">
+  <h3 class="text-lg font-semibold mb-4">Why Commits Increased</h3>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-orange-500">
+      <div class="text-orange-400 font-medium mb-2">Claude writes good commit messages</div>
+      <div class="text-slate-400 text-sm">
+        I can just ask "commit this with a good message" and get a clear,
+        descriptive commit. Removes friction from the process.
+      </div>
+    </div>
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-sky-500">
+      <div class="text-sky-400 font-medium mb-2">Frequent commits = safety net</div>
+      <div class="text-slate-400 text-sm">
+        More commits meant I felt safe breaking things and pushing forward.
+        Easy to roll back if something goes wrong.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-6 rounded-r my-6">
+  <div class="text-xl font-bold mb-2">Claude Code made me a better developer</div>
+  <div class="text-slate-400">
+    More commits isn't "more output"—it's better version control habits.
+    Claude made committing so easy that I actually started doing it more.
+  </div>
+  <div class="text-slate-400 mt-2">
+    The tool changed my behavior, not just my productivity.
+  </div>
+</div>
+
+## Lens 3: Documentation Behavior
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-4 mb-6 rounded-r">
+  <div class="text-xl md:text-2xl font-bold">3,600+ lines of documentation</div>
+  <div class="text-slate-400">Lessons learned, code complexities, debugging context—all easily saved after changes</div>
+</div>
+
+<DocumentationChart client:load />
+
+<div class="bg-slate-800 rounded-lg p-6 mb-6">
+  <h3 class="text-lg font-semibold mb-4">Why Documentation Actually Happens Now</h3>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-orange-500">
+      <div class="text-orange-400 font-medium mb-2">Claude makes it frictionless</div>
+      <div class="text-slate-400 text-sm">
+        During debugging, Claude explains what went wrong and why the fix works.
+        That explanation becomes documentation with minimal effort.
+      </div>
+    </div>
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-sky-500">
+      <div class="text-sky-400 font-medium mb-2">AI_docs = Claude's memory</div>
+      <div class="text-slate-400 text-sm">
+        Claude uses these docs as context. The documentation isn't just for me—it's
+        how Claude remembers architectural decisions and past debugging sessions.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6 mb-6">
+  {/* Pre-Claude */}
+  <div class="bg-slate-800 rounded-lg p-6">
+    <h3 class="text-lg font-semibold mb-4 text-gray-400">Pre-Claude</h3>
+    <div class="font-mono text-sm text-slate-500 bg-slate-900 rounded p-4">
+      <div class="text-slate-600">ai_docs/</div>
+      <div class="text-slate-600 pl-4">└── (empty)</div>
+    </div>
+    <div class="mt-4 text-slate-500 text-sm">
+      Other tools did not encourage this habit.  It is almost essential with Claude Code.
+    </div>
+  </div>
+
+  {/* Claude Code */}
+  <div class="bg-slate-800 rounded-lg p-6 border border-orange-500/30">
+    <h3 class="text-lg font-semibold mb-4 text-orange-400">Claude Code</h3>
+    <div class="font-mono text-sm text-slate-300 bg-slate-900 rounded p-4">
+      <div class="text-orange-400">ai_docs/</div>
+      <div class="pl-4 text-slate-300 text-xs">├── search-virtualization-deep-dive.md</div>
+      <div class="pl-4 text-slate-300 text-xs">├── search-feature-architecture.md</div>
+      <div class="pl-4 text-slate-300 text-xs">├── scroll-coordinator-guide.md</div>
+      <div class="pl-4 text-slate-300 text-xs">├── firebase-architecture.md</div>
+      <div class="pl-4 text-slate-500 text-xs">└── ...</div>
+    </div>
+    <div class="mt-4 text-slate-400 text-sm">
+      3,600+ lines of architecture docs, debug sessions, patterns.
+    </div>
+  </div>
+</div>
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-6 rounded-r my-6">
+  <div class="text-xl font-bold mb-2">AI_docs is the best habit for complex projects</div>
+  <div class="text-slate-400">
+    It lets you build projects bigger than what fits in your head.
+    Architecture decisions, debugging context, integration details—ask Claude.  Those details belong in text so you can focus on higher level issues like user experience.
+  </div>
+  <div class="text-slate-400 mt-2">
+    Claude's memory is only as good as what you document.
+  </div>
+</div>
+
+## Lens 4: Qualitative Pattern Changes
+
+Numbers don't capture everything. Some changes are about **how** work happens.
+
+<div class="grid gap-6 mb-8">
+  <div class="bg-slate-800 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="text-3xl">🤝</div>
+      <div>
+        <div class="text-lg font-semibold text-orange-400 mb-1">Trust Over Time</div>
+        <div class="font-medium mb-2">Claude has earned trust through updates</div>
+        <div class="text-slate-400 text-sm">Started at Claude 3 inside wrappers. Claude Code harness and models receive continuous updates.  In just a few short months, the experience has improved significantly.</div>
+      </div>
+    </div>
+  </div>
+  <div class="bg-slate-800 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="text-3xl">🔄</div>
+      <div>
+        <div class="text-lg font-semibold text-orange-400 mb-1">Recovery</div>
+        <div class="font-medium mb-2">Easier to recover from mistakes</div>
+        <div class="text-slate-400 text-sm">Cursor/Windsurf UIs got clunky on long threads. Complex multi-file work was slow. Claude Code is faster to jump back with ESC ESC shortcut or using commits.</div>
+      </div>
+    </div>
+  </div>
+  <div class="bg-slate-800 rounded-lg p-6">
+    <div class="flex items-start gap-4">
+      <div class="text-3xl">⚡</div>
+      <div>
+        <div class="text-lg font-semibold text-orange-400 mb-1">Tool Experience</div>
+        <div class="font-medium mb-2">Claude CLI is zippy and simple</div>
+        <div class="text-slate-400 text-sm">Simple design, even toylike. It is the easiest dev tool I've ever used.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+## Conclusion
+
+Claude was first and is still the best (December 2025) despite lots of competition.
+
+<div class="bg-gradient-to-r from-sky-500/20 to-transparent border-l-4 border-sky-400 p-6 rounded-r mb-6">
+  <div class="text-xl font-bold mb-2">
+    Claude Code is a magical experience that makes coding easy
+  </div>
+  <div class="text-slate-400">
+    The experience is qualitatively better than any agentic integrated development environment I've tried.
+    The traction and progress they've made—even over the last few months—is very real.
+  </div>
+</div>
+
+<div class="bg-slate-800 rounded-lg p-6 mb-6">
+  <h3 class="text-lg font-semibold mb-4">The Wrapper Experience vs Claude Code</h3>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-pink-500">
+      <div class="text-pink-400 font-medium mb-2">Cursor / Windsurf</div>
+      <ul class="text-slate-400 text-sm space-y-2">
+        <li>UI got clunky on long threads</li>
+        <li>Complex multi-file work was slow</li>
+        <li>Context compression issues</li>
+        <li>Had to re-explain things</li>
+      </ul>
+    </div>
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-orange-500">
+      <div class="text-orange-400 font-medium mb-2">Claude Code</div>
+      <ul class="text-slate-300 text-sm space-y-2">
+        <li>Zippy CLI experience</li>
+        <li>Simple, clean design</li>
+        <li>Full context preserved</li>
+        <li>Easy to recover from mistakes</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="bg-slate-800 rounded-lg p-6 mb-6">
+  <h3 class="text-lg font-semibold mb-4">Evidence it's catching on</h3>
+  <div class="space-y-4">
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-pink-500">
+      <div class="text-pink-400 font-medium mb-2">Cursor's Pivot</div>
+      <div class="text-slate-400 text-sm">
+        Cursor hired Claude Code's creators—Boris and Cat (developer and product manager).
+        They stayed a couple weeks before Anthropic was able to hire them back. Now Cursor has their
+        own CLI agentic coding experience.
+      </div>
+    </div>
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-teal-500">
+      <div class="text-teal-400 font-medium mb-2">Product-Market Fit</div>
+      <div class="text-slate-400 text-sm">
+        My feeling: Sonnet 4 hit product-market fit with Claude Code. Lots of people
+        migrated to the better experience.
+      </div>
+    </div>
+    <div class="bg-slate-900 rounded-lg p-4 border-l-4 border-orange-500">
+      <div class="text-orange-400 font-medium mb-2">Competition Following</div>
+      <div class="text-slate-400 text-sm">
+        Gemini CLI, OpenAI Codex, and others have followed Claude's lead.
+        Proof that the approach is effective.
+      </div>
+    </div>
+  </div>
+</div>
+
+Not all agentic coding tools are equal.
+
+### What The Data Shows
+
+<div class="bg-slate-800 rounded-lg p-6 mb-6">
+  <div class="space-y-6">
+    <div class="flex items-start gap-3">
+      <span class="text-xl">📉</span>
+      <div>
+        <div class="font-bold">Debug sessions ~60% shorter</div>
+        <div class="text-slate-400">From 50-hour average to 25-hour average</div>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <span class="text-xl">📝</span>
+      <div>
+        <div class="font-bold">Documentation exists</div>
+        <div class="text-slate-400">3,600+ lines that didn't exist before</div>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <span class="text-xl">💾</span>
+      <div>
+        <div class="font-bold">Commit behavior changed</div>
+        <div class="text-slate-400">~150% more commits because Claude makes it frictionless</div>
+      </div>
+    </div>
+    <div class="flex items-start gap-3">
+      <span class="text-xl">⚡</span>
+      <div>
+        <div class="font-bold">Workflow itself is different</div>
+        <div class="text-slate-400">More trust, easier recovery, zippy CLI experience</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+### The Reality Check
+
+As of the end of 2025, coding with agentic tools is still collaborative and iterative. A human in the loop is required. 100% vibe coding probably takes longer than steering smartly toward your goals. Testing is still required, though Claude Code is getting better at one shot implementations. You still have to test and fix almost everything moderately complex. You still have to steer it, especially when things are complex—documentation to follow, integrating parts. You also have to mind your architecture. Sometimes Claude gets stuck in the weeds, and you have to step back and talk about the architecture at a higher level.
+
+Documenting everything has been a game changer. AI_docs is Claude's memory. When I hit the same issues again, Claude already has the context. When I have documentation, I can use him as an oracle. I ask him to give me a command to do X and he can lookup the context and provide the terminal syntax I asked for.
+
+<details class="bg-slate-800 rounded-lg p-6 my-8">
+  <summary class="text-lg font-semibold cursor-pointer hover:text-sky-400 transition-colors">Appendix: Methodology</summary>
+  <div class="mt-4 space-y-4 text-slate-300">
+    <div>
+      <div class="font-medium text-white">Data sources:</div>
+      <ul class="list-disc list-inside mt-1 text-sm">
+        <li>hours.csv: 610 entries from April 2024 through December 2025</li>
+        <li>Git commit history: 1,387 commits across reazy-app, reazy-inference, tts-training-pipeline, and supporting repos</li>
+        <li>Personal notes and documentation</li>
+      </ul>
+    </div>
+    <div>
+      <div class="font-medium text-white">Tool era boundaries:</div>
+      <ul class="list-disc list-inside mt-1 text-sm">
+        <li>GPT Prompting / Copilot: January 2024 - October 2024</li>
+        <li>Cursor: November 2024 - January 2025</li>
+        <li>Windsurf: February 2025 - June 2025</li>
+        <li>Claude Code: July 2025 - present (first commit: July 14, 2025)</li>
+      </ul>
+    </div>
+    <div>
+      <div class="font-medium text-white">Commit attribution:</div>
+      <ul class="list-disc list-inside mt-1 text-sm">
+        <li>282 commits (20% of total) explicitly marked with "Generated with Claude Code"</li>
+        <li>Many more commits in Claude era not explicitly marked but created with Claude assistance</li>
+      </ul>
+    </div>
+    <div>
+      <div class="font-medium text-white">Limitations:</div>
+      <ul class="list-disc list-inside mt-1 text-sm">
+        <li>Single developer, single project—may not generalize</li>
+        <li>Skill growth over 22 months is a complicating factor</li>
+        <li>Infrastructure maturity affects later development speed</li>
+        <li>Commit granularity changed between eras</li>
+      </ul>
+    </div>
+    <div class="text-sm italic text-slate-400 pt-2 border-t border-slate-700">
+      The goal was honest analysis, not advocacy. I tried to show the data fairly and let you draw your own conclusions.
+    </div>
+  </div>
+</details>
