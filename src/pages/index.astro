@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Base title="Whitfield">
+  <section class="hero animate-in">
+    <h1>Whitfield</h1>
+    <p class="hero-subtitle">Thoughts, notes, and occasional longer things.</p>
+  </section>
+
+  <section>
+    <p class="posts-section-title animate-in" style="animation-delay: 100ms;">Recent Writing</p>
+    <ul class="post-list">
+      {posts.map((post, i) => (
+        <li class="post-item animate-in" style={`animation-delay: ${(i + 2) * 80}ms`}>
+          <a href={`/blog/${post.id}`}>
+            <span class="post-date">
+              {post.data.pubDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </span>
+            <span class="post-title">{post.data.title}</span>
+            {post.data.description && (
+              <p class="post-excerpt">{post.data.description}</p>
+            )}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

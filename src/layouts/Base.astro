@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Personal blog by Ben Whitfield' } = Astro.props;
+const siteTitle = 'Whitfield';
+const fullTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/" class="site-logo">{siteTitle}</a>
+      <nav class="site-nav">
+        <a href="/">Writing</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      &copy; {new Date().getFullYear()} Ben Whitfield
+    </footer>
+  </body>
+</html>
