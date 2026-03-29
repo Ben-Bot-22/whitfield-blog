@@ -6,32 +6,35 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
-<Base title="Whitfield">
-  <section class="hero animate-in">
-    <h1>Whitfield</h1>
-    <p class="hero-subtitle">Thoughts, notes, and occasional longer things.</p>
+<Base title="whitfield.dev">
+  <h1 class="site-title animate-in">Ben Whitfield</h1>
+  <p class="site-tagline animate-in">software developer, entrepreneur, electronic music maker</p>
+
+  <section class="section animate-in">
+    <h2 class="section-title">Projects</h2>
+    <ul class="project-list">
+      <li class="project-item"><a href="https://neonbuffalo.studio/" target="_blank" rel="noopener">Neon Buffalo</a></li>
+      <li class="project-item"><a href="https://www.reazy.pro/" target="_blank" rel="noopener">Reazy</a></li>
+    </ul>
   </section>
 
-  <section>
-    <p class="posts-section-title animate-in" style="animation-delay: 100ms;">Recent Writing</p>
-    <ul class="post-list">
-      {posts.map((post, i) => (
-        <li class="post-item animate-in" style={`animation-delay: ${(i + 2) * 80}ms`}>
-          <a href={`/blog/${post.id}`}>
-            <span class="post-date">
-              {post.data.pubDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </span>
-            <span class="post-title">{post.data.title}</span>
-            {post.data.description && (
-              <p class="post-excerpt">{post.data.description}</p>
-            )}
-          </a>
-        </li>
-      ))}
-    </ul>
+  <section class="section animate-in">
+    <h2 class="section-title">Blog</h2>
+  <ul class="post-list">
+    {posts.map((post, i) => (
+      <li class="post-item animate-in" style={`animation-delay: ${(i + 1) * 50}ms`}>
+        <a href={`/blog/${post.id}`}>
+          <span class="post-date">
+            {post.data.pubDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </span>
+          <span class="post-title">{post.data.title}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
   </section>
 </Base>

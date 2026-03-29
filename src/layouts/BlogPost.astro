@@ -19,11 +19,11 @@ const formattedDate = pubDate.toLocaleDateString('en-US', {
 <Base title={title} description={description}>
   <article>
     <header class="post-header animate-in">
+      <a href="/" class="back-link">&larr; whitfield.dev</a>
       <span class="post-date">{formattedDate}</span>
       <h1>{title}</h1>
-      {description && <p class="post-description">{description}</p>}
     </header>
-    <div class="prose animate-in" style="animation-delay: 120ms;">
+    <div class="prose animate-in" style="animation-delay: 80ms;">
       <slot />
     </div>
   </article>
