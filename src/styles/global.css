@@ -142,6 +142,11 @@ main {
   margin-bottom: 0.2rem;
 }
 
+.post-source {
+  margin-left: 0.4rem;
+  opacity: 0.75;
+}
+
 .post-title {
   font-size: 1.2rem;
   font-weight: 500;

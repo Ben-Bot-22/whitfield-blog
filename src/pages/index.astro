@@ -2,8 +2,34 @@
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const internalPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .map((p) => ({
+    title: p.data.title,
+    pubDate: p.data.pubDate,
+    href: `/blog/${p.id}`,
+    external: false as const,
+  }));
+
+const externalPosts = [
+  {
+    title: "150,000 Apple Developers Terminated: 2.8% Reinstated. Here's How I Beat the Odds",
+    pubDate: new Date('2026-03-06'),
+    href: 'https://www.reazy.pro/blog/150000-apple-developers-terminated-2-8-reinstated-heres-how-i-beat-the-odds',
+    external: true as const,
+    source: 'reazy.pro',
+  },
+  {
+    title: 'Apple Terminated My Dyslexia App Before It Ever Launched — With No Explanation',
+    pubDate: new Date('2026-03-03'),
+    href: 'https://www.reazy.pro/blog/apple-terminated-developer-account-no-explanation',
+    external: true as const,
+    source: 'reazy.pro',
+  },
+];
+
+const posts = [...internalPosts, ...externalPosts].sort(
+  (a, b) => b.pubDate.valueOf() - a.pubDate.valueOf()
+);
 ---
 
 <Base title="whitfield.dev">
@@ -23,15 +49,22 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
   <ul class="post-list">
     {posts.map((post, i) => (
       <li class="post-item animate-in" style={`animation-delay: ${(i + 1) * 50}ms`}>
-        <a href={`/blog/${post.id}`}>
+        <a
+          href={post.href}
+          {...(post.external ? { target: '_blank', rel: 'noopener' } : {})}
+        >
           <span class="post-date">
-            {post.data.pubDate.toLocaleDateString('en-US', {
+            {post.pubDate.toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
+              timeZone: 'UTC',
             })}
+            {post.external && (
+              <span class="post-source">· {post.source} ↗</span>
+            )}
           </span>
-          <span class="post-title">{post.data.title}</span>
+          <span class="post-title">{post.title}</span>
         </a>
       </li>
     ))}
