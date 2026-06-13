@@ -33,7 +33,16 @@ const posts = [...internalPosts, ...externalPosts].sort(
 ---
 
 <Base title="whitfield.dev">
-  <h1 class="site-title animate-in">Ben Whitfield</h1>
+  <header class="site-header animate-in">
+    <img
+      class="avatar"
+      src="/headshot.jpg"
+      alt="Ben Whitfield"
+      width="500"
+      height="500"
+    />
+    <h1 class="site-title">Ben Whitfield</h1>
+  </header>
   <p class="site-roles animate-in">
     <span>Full-stack developer</span>
     <span class="sep" aria-hidden="true">·</span>
@@ -80,3 +89,29 @@ const posts = [...internalPosts, ...externalPosts].sort(
   </ul>
   </section>
 </Base>
+
+<script>
+  const title = document.querySelector('.site-title');
+  const colors = ['#ff0059', '#ff7a00', '#ffe600', '#00ff66', '#00e5ff', '#2d7bff', '#b026ff', '#ffffff'];
+  let i = -1;
+  let clickedThisHover = false;
+
+  // Entering hover always starts a fresh sweep
+  title?.addEventListener('mouseenter', () => {
+    clickedThisHover = false;
+    title.classList.remove('color-locked');
+  });
+
+  // Click swaps to the next color and shows it solid (over the sweep)
+  title?.addEventListener('click', () => {
+    i = (i + 1) % colors.length;
+    title.style.setProperty('--lock-color', colors[i]);
+    title.classList.add('color-locked');
+    clickedThisHover = true;
+  });
+
+  // The color sticks only if you clicked this hover; otherwise reset to white
+  title?.addEventListener('mouseleave', () => {
+    if (!clickedThisHover) title.classList.remove('color-locked');
+  });
+</script>
