@@ -70,11 +70,41 @@ main {
   color: var(--color-text);
 }
 
-.site-tagline {
-  font-size: 0.9rem;
-  font-weight: 300;
+.site-roles {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--color-text);
+  letter-spacing: 0.005em;
+  margin-bottom: 1.1rem;
+}
+
+.site-roles .sep {
   color: var(--color-text-muted);
+  opacity: 0.55;
+  margin: 0 0.45em;
+}
+
+.site-intro {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 34rem;
   margin-bottom: 4rem;
+}
+
+.site-intro a {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-text-muted);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.site-intro a:hover {
+  color: var(--color-text);
+  text-decoration-color: var(--color-highlight);
 }
 
 /* ——— Sections ——— */
@@ -84,12 +114,12 @@ main {
 }
 
 .section-title {
-  font-size: 0.8rem;
-  font-weight: 400;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 1rem;
+  letter-spacing: 0.09em;
+  margin-bottom: 1.1rem;
 }
 
 .project-list {
@@ -136,7 +166,7 @@ main {
 
 .post-date {
   font-size: 0.8rem;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--color-text-muted);
   display: block;
   margin-bottom: 0.2rem;
@@ -266,5 +296,6 @@ main {
 
 @media (max-width: 640px) {
   main { padding: 3rem 1.25rem; }
-  .site-tagline { margin-bottom: 3rem; }
+  .site-roles { font-size: 1.02rem; }
+  .site-intro { margin-bottom: 3rem; }
 }
