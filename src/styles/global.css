@@ -6,6 +6,8 @@
   --color-text-muted: #AAA;
   --color-border: #1E1E1E;
   --color-highlight: rgba(0, 230, 255, 0.5);
+  --color-accent: #00e6ff;
+  --color-error: #ff6b6b;
 
   --font: 'Source Serif 4', Georgia, serif;
   --measure: 600px;
@@ -73,6 +75,95 @@ main {
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--color-border);
+  cursor: grab;
+  position: relative;
+  z-index: 1;
+  /* gentle affordance: lifts slightly on hover so it reads as interactive */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  /* keep the photo crisp while it spins on the compositor */
+  backface-visibility: hidden;
+  /* claim touch gestures so a drag never turns into a page scroll (the browser
+     locks this in at touchstart, before JS can add a class) */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.avatar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+/* Slingshot toy: while being dragged or flying, JS owns the transform via a
+   single rAF writer. Disable the rest-state transition and hover-lift so they
+   don't fight the physics loop. Subordinate to the rainbow name. */
+.avatar.is-active,
+.avatar.is-active:hover {
+  z-index: 1000;
+  cursor: grabbing;
+  transition: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /* the live transform is written inline each frame; neutralise :hover here */
+  touch-action: none;
+  will-change: transform;
+}
+
+/* Speed streak: full-viewport canvas the avatar's cyan V is painted onto.
+   Canvas avoids CSS clip-path/gradient browser quirks. Non-interactive, and
+   z-index:-1 guarantees it sits BEHIND the avatar (and page text). */
+.avatar-streak {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Pinball: a text block lights up in the hit's rainbow colour when the avatar
+   bounces off it (--bump-color set per hit in JS). The shove + spring-back is
+   an inline transform in JS; this is the colour flash + glow. */
+.text-bumped {
+  animation: text-bump-flash 0.2s ease-out;
+}
+
+/* The whole block's text lights up in the hit's rainbow colour. -webkit-text-fill-color
+   covers the gradient-filled name; color covers everything else; applied to children
+   too so links/spans inside a block light up with it. */
+.text-bumped,
+.text-bumped * {
+  color: var(--bump-color, #00e6ff) !important;
+  -webkit-text-fill-color: var(--bump-color, #00e6ff) !important;
+}
+
+@keyframes text-bump-flash {
+  0%   { filter: brightness(1.7) drop-shadow(0 0 16px var(--bump-color, #00e6ff)); }
+  55%  { filter: brightness(1.3) drop-shadow(0 0 11px var(--bump-color, #00e6ff)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+}
+
+/* Floating "+N" score that rises and fades at each impact point. */
+.hit-score {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 1.5rem;
+  pointer-events: none;
+  z-index: 1001;
+  text-shadow: 0 0 8px currentColor;
+  animation: hit-score-pop 0.85s ease-out forwards;
+}
+
+@keyframes hit-score-pop {
+  0%   { opacity: 0; transform: translate(-50%, -40%) scale(0.5); }
+  18%  { opacity: 1; transform: translate(-50%, -90%) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -240%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* soften, don't kill: the drag still works but launches gently (low speed,
+     no spin, no trail — handled in JS). Drop the hover lift to stay calm. */
+  .avatar:hover { transform: none; box-shadow: none; }
 }
 
 .site-title {
@@ -135,7 +226,7 @@ main {
   line-height: 1.7;
   color: var(--color-text-muted);
   max-width: 34rem;
-  margin-bottom: 4rem;
+  margin-bottom: 1.25rem;
 }
 
 .site-intro a {
@@ -150,6 +241,22 @@ main {
 .site-intro a:hover {
   color: var(--color-text);
   text-decoration-color: var(--color-highlight);
+}
+
+/* Quiet, de-emphasised link to the contact page. Sits close to the intro
+   above it (proximity), with the larger gap below separating it from Projects. */
+.contact-link {
+  margin-bottom: 4rem;
+}
+
+.contact-link a {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.contact-link a:hover {
+  color: var(--color-text);
 }
 
 /* ——— Sections ——— */
@@ -337,6 +444,123 @@ main {
   animation: fadeIn 0.4s ease both;
 }
 
+/* ——— Contact form ——— */
+
+.contact-title {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.6rem;
+}
+
+.contact-intro {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 34rem;
+  margin-bottom: 2.5rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 34rem;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-text-muted);
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.7rem 0.9rem;
+  transition: border-color 0.15s ease;
+}
+
+.field-textarea {
+  min-height: 9rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.field-input::placeholder,
+.field-textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.field-input:focus,
+.field-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.contact-submit {
+  align-self: flex-start;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.contact-submit:hover {
+  background: var(--color-highlight);
+  border-color: var(--color-highlight);
+}
+
+.contact-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.contact-status {
+  min-height: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.contact-status.is-error {
+  color: var(--color-error);
+}
+
+.contact-status.is-success {
+  color: var(--color-accent);
+}
+
 /* ——— Responsive ——— */
 
 @media (max-width: 640px) {
@@ -345,5 +569,6 @@ main {
   .avatar { width: 68px; height: 68px; }
   .site-title { font-size: 2.2rem; }
   .site-roles { font-size: 1rem; }
-  .site-intro { margin-bottom: 3rem; }
+  .site-intro { margin-bottom: 1.1rem; }
+  .contact-link { margin-bottom: 3rem; }
 }
