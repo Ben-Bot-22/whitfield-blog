@@ -207,17 +207,21 @@ main {
 }
 
 .site-roles {
+  /* Sized to fill the fixed 600px content column on one line (web): ~1.1rem at
+     the compressed .sep spacing below lands just inside the column. nowrap keeps
+     it on a single line here; the mobile rule restores wrapping. */
   font-size: 1.1rem;
   font-weight: 400;
   color: var(--color-text-muted);
   letter-spacing: 0.005em;
   margin-bottom: 1.5rem;
+  white-space: nowrap;
 }
 
 .site-roles .sep {
   color: var(--color-text-muted);
   opacity: 0.55;
-  margin: 0 0.45em;
+  margin: 0 0.3em;
 }
 
 .site-intro {
@@ -256,6 +260,23 @@ main {
 }
 
 .contact-link a:hover {
+  color: var(--color-text);
+}
+
+/* Hire signal → /about. Deliberately matches .contact-link (same muted colour
+   and arrow): the page keeps "one loud thing" — the rainbow name — so this CTA
+   stays calm and lets position + copy carry it, sitting just above "Get in touch". */
+.available-link {
+  margin-bottom: 0.6rem;
+}
+
+.available-link a {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.available-link a:hover {
   color: var(--color-text);
 }
 
@@ -561,6 +582,165 @@ main {
   color: var(--color-accent);
 }
 
+/* ——— Freelance page (recruiter/client landing) ——— */
+
+/* Credential header: name → role → summary → availability → stack → actions,
+   then a hairline rule. Everything a recruiter filters on sits above the prose. */
+.freelance-head {
+  padding-bottom: 2.4rem;
+  margin-bottom: 2.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Big name reuses .site-title (rainbow on hover, same as the homepage). */
+.freelance-head .site-title {
+  margin-bottom: 0.55rem;
+}
+
+.freelance-role {
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.005em;
+  margin-bottom: 1rem;
+}
+
+/* Availability + eligibility — a live cyan dot reads "open to work" at a glance;
+   the citizenship/remote facts are the hard filters a recruiter checks early. */
+.about-status {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+  margin-bottom: 1.6rem;
+}
+
+.about-status .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 7px var(--color-accent);
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  animation: avail-pulse 2.4s ease-in-out infinite;
+}
+
+.about-status .sep {
+  opacity: 0.55;
+  margin: 0 0.55em;
+}
+
+@keyframes avail-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 255, 0.55); }
+  50%      { box-shadow: 0 0 9px 2px rgba(0, 230, 255, 0.4); }
+}
+
+/* Stack — a labelled grid: category (muted eyebrow) + technologies. Scannable
+   by row so a client can spot the area they care about instantly. */
+.stack-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.55rem 1.6rem;
+  max-width: 40rem;
+  margin-bottom: 1.7rem;
+}
+
+.stack-grid dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding-top: 0.28rem;
+}
+
+.stack-grid dd {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+/* Actions — CV + contact as plain, equal links in the site's quiet link voice. */
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.about-actions a {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease;
+}
+
+.about-actions a:hover {
+  color: var(--color-text);
+}
+
+/* Body — the lead line is a touch larger; paragraphs read at full text colour. */
+.freelance-intro {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  max-width: 36rem;
+  margin-bottom: 2.6rem;
+}
+
+.freelance-body {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  max-width: 38rem;
+  margin-bottom: 1.1rem;
+}
+
+/* "What I shipped" detail — real bullets, one text colour throughout (the bold
+   lead-in adds weight, not a second colour). */
+.shipped-list {
+  list-style: disc;
+  padding-left: 1.2rem;
+  max-width: 38rem;
+  margin: 0.4rem 0 1.4rem;
+}
+
+.shipped-list li {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  margin-bottom: 0.85rem;
+  padding-left: 0.2rem;
+}
+
+.shipped-list li::marker {
+  color: var(--color-text-muted);
+}
+
+.shipped-list strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+.freelance-readmore {
+  margin-top: 1.3rem;
+}
+
+.freelance-readmore a {
+  font-size: 1rem;
+  color: var(--color-accent);
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+.freelance-readmore a:hover {
+  color: #4df2ff;
+  text-shadow: 0 0 12px var(--color-highlight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* hold the availability dot steady — its meaning is the colour, not motion */
+  .about-status .dot { animation: none; }
+}
+
 /* ——— Responsive ——— */
 
 @media (max-width: 640px) {
@@ -568,7 +748,12 @@ main {
   .site-header { gap: 1.1rem; }
   .avatar { width: 68px; height: 68px; }
   .site-title { font-size: 2.2rem; }
-  .site-roles { font-size: 1rem; }
+  .site-roles { font-size: 1rem; white-space: normal; }
   .site-intro { margin-bottom: 1.1rem; }
   .contact-link { margin-bottom: 3rem; }
+  .freelance-role { font-size: 1.05rem; }
+  .freelance-summary,
+  .freelance-intro { font-size: 1.05rem; }
+  .stack-grid { gap: 0.5rem 1.1rem; }
+  .about-actions { gap: 1rem; }
 }

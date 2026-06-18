@@ -1,0 +1,103 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Freelance"
+  description="Ben Whitfield — senior full-stack developer. I design, build, and ship products end-to-end: web, mobile, and the backend behind them. Available for remote contract work."
+>
+  <a href="/" class="back-link">&larr; whitfield.dev</a>
+
+  <header class="freelance-head animate-in">
+    <h1 class="site-title">Ben Whitfield</h1>
+    <p class="freelance-role">Senior full-stack developer</p>
+
+    <!-- Hire signal: remove "· Seeking remote contract" after the contract phase. -->
+    <p class="about-status">
+      <span class="dot" aria-hidden="true"></span>U.S. citizen<span class="sep" aria-hidden="true">·</span>Seeking remote contract
+    </p>
+
+    <dl class="stack-grid">
+      <dt>Frontend</dt>
+      <dd>React · TypeScript · JavaScript</dd>
+      <dt>Backend</dt>
+      <dd>Node.js · Python · REST APIs · Firestore (NoSQL) · Google Cloud Storage</dd>
+      <dt>Cloud</dt>
+      <dd>Google Cloud Platform · Firebase · Docker</dd>
+      <dt>Mobile</dt>
+      <dd>Capacitor (iOS + Android) · custom native audio engine (Swift, Kotlin)</dd>
+      <dt>ML / AI</dt>
+      <dd>PyTorch · custom model training · production inference</dd>
+      <dt>Testing</dt>
+      <dd>Playwright · Vitest</dd>
+    </dl>
+
+    <p class="about-actions">
+      <a href="/cv/ben-whitfield-cv.pdf" target="_blank" rel="noopener">Download CV (PDF) ↗</a>
+      <a href="/contact">Get in touch ↗</a>
+    </p>
+  </header>
+
+  <p class="freelance-intro animate-in" style="animation-delay: 80ms;">
+    I'm a full-stack developer who designs, builds, and ships products end-to-end
+    — web, mobile, and the backend behind them — solo, in production, for real
+    users.
+  </p>
+
+  <section class="section animate-in" style="animation-delay: 140ms;">
+    <h2 class="section-title">What I shipped</h2>
+    <p class="freelance-body">
+      I built Reazy, a cross-platform text-to-speech SaaS, from nothing to
+      500+ users, with paying subscribers across the Chrome Web Store, Google
+      Play, and the Apple App Store. I was the only
+      engineer — architecture, frontend, backend, ML training, payments, and
+      deployment. The product turns documents, web pages, and raw text into
+      natural speech.
+    </p>
+    <p class="freelance-body">Being the only engineer meant owning problems end-to-end:</p>
+    <ul class="shipped-list">
+      <li>
+        <strong>Frontend performance</strong> — built a virtualized reader that
+        renders 1,000+ page documents smoothly, staying fast at any document size.
+      </li>
+      <li>
+        <strong>Billing</strong> — unified Stripe (web), StoreKit 2 (iOS), and
+        Google Play Billing (Android) into one provider-agnostic entitlement
+        model: a single source of truth for who's paid, across all three stores.
+      </li>
+      <li>
+        <strong>Machine learning, end to end</strong> — built the text-to-speech
+        voice pipeline from data to production: data processing, models adapted
+        from open-source architectures (FastPitch, HiFi-GAN), and a cost- and
+        latency-optimized inference backend.
+      </li>
+      <li>
+        <strong>Native mobile</strong> — built a custom native audio engine in
+        Swift and Kotlin, replacing off-the-shelf plugins: gapless playback,
+        lock-screen controls, and background audio on both platforms.
+      </li>
+    </ul>
+    <p class="freelance-body">
+      The app — web, Chrome extension, and mobile — shipped from one React +
+      TypeScript monorepo with a shared core library and automated tests. Model
+      inference ran as a separate Python service on Google Cloud Run.
+    </p>
+    <!-- TODO: enable when the "Building Reazy" post is live — set href to the post URL:
+    <p class="freelance-readmore">
+      <a href="REPLACE_WITH_POST_URL">I wrote up the full technical story here → Building Reazy</a>
+    </p>
+    -->
+  </section>
+
+  <section class="section animate-in" style="animation-delay: 200ms;">
+    <h2 class="section-title">Experience</h2>
+    <p class="freelance-body">
+      Before software, I spent a decade as an operations-research analyst and
+      economist for the U.S. Air Force, including at the Pentagon. I started
+      teaching myself to build software in 2015 (Stanford's open courseware, The
+      Odin Project) and went full-time in 2021: game development, a deep dive into
+      system design and the web, then 3.5 years building and running Reazy
+      end-to-end.
+    </p>
+  </section>
+</Base>
