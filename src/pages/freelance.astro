@@ -9,7 +9,16 @@ import Base from '../layouts/Base.astro';
   <a href="/" class="back-link">&larr; whitfield.dev</a>
 
   <header class="freelance-head animate-in">
-    <h1 class="site-title">Ben Whitfield</h1>
+    <div class="site-header">
+      <img
+        class="freelance-avatar"
+        src="/headshot.jpg"
+        alt="Ben Whitfield"
+        width="500"
+        height="500"
+      />
+      <h1 class="site-title">Ben Whitfield</h1>
+    </div>
     <p class="freelance-role">Senior full-stack developer</p>
 
     <!-- Hire signal: remove "· Seeking remote contract" after the contract phase. -->
@@ -47,9 +56,11 @@ import Base from '../layouts/Base.astro';
   <section class="section animate-in" style="animation-delay: 140ms;">
     <h2 class="section-title">What I shipped</h2>
     <p class="freelance-body">
-      I built Reazy, a cross-platform text-to-speech SaaS, from nothing to
-      500+ users, with paying subscribers across the Chrome Web Store, Google
-      Play, and the Apple App Store. I was the only
+      I built <a href="https://www.reazy.pro/" target="_blank" rel="noopener">Reazy</a>, a cross-platform text-to-speech SaaS, from nothing to
+      500+ users, with paying subscribers across the
+      <a href="https://chromewebstore.google.com/detail/reazy-text-to-speech/gaibmcgoecopcdbokclpabkklecjdfmg" target="_blank" rel="noopener">Chrome Web Store</a>,
+      <a href="https://play.google.com/store/apps/details?id=pro.reazy.app" target="_blank" rel="noopener">Google Play</a>,
+      and the <a href="https://apps.apple.com/us/app/reazy-text-to-speech/id6758965713" target="_blank" rel="noopener">Apple App Store</a>. I was the only
       engineer — architecture, frontend, backend, ML training, payments, and
       deployment. The product turns documents, web pages, and raw text into
       natural speech.
@@ -68,7 +79,7 @@ import Base from '../layouts/Base.astro';
       <li>
         <strong>Machine learning, end to end</strong> — built the text-to-speech
         voice pipeline from data to production: data processing, models adapted
-        from open-source architectures (FastPitch, HiFi-GAN), and a cost- and
+        from open-source architectures (<a href="https://arxiv.org/abs/2006.06873" target="_blank" rel="noopener">FastPitch</a>, <a href="https://arxiv.org/abs/2010.05646" target="_blank" rel="noopener">HiFi-GAN</a>), and a cost- and
         latency-optimized inference backend.
       </li>
       <li>
@@ -94,8 +105,8 @@ import Base from '../layouts/Base.astro';
     <p class="freelance-body">
       Before software, I spent a decade as an operations-research analyst and
       economist for the U.S. Air Force, including at the Pentagon. I started
-      teaching myself to build software in 2015 (Stanford's open courseware, The
-      Odin Project) and went full-time in 2021: game development, a deep dive into
+      teaching myself to build software in 2015 (<a href="https://see.stanford.edu/Course" target="_blank" rel="noopener">Stanford's open courseware</a>,
+      <a href="https://www.theodinproject.com/" target="_blank" rel="noopener">The Odin Project</a>) and went full-time in 2021: game development, a deep dive into
       system design and the web, then 3.5 years building and running Reazy
       end-to-end.
     </p>

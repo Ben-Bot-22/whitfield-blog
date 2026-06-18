@@ -587,14 +587,20 @@ main {
 /* Credential header: name → role → summary → availability → stack → actions,
    then a hairline rule. Everything a recruiter filters on sits above the prose. */
 .freelance-head {
-  padding-bottom: 2.4rem;
-  margin-bottom: 2.6rem;
+  padding-bottom: 2.2rem;
+  margin-bottom: 1.6rem;
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Big name reuses .site-title (rainbow on hover, same as the homepage). */
-.freelance-head .site-title {
-  margin-bottom: 0.55rem;
+/* Name + avatar reuse the homepage header layout; the avatar is static here
+   (the slingshot physics is homepage-only JS) so it doesn't imply interaction. */
+.freelance-avatar {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
 }
 
 .freelance-role {
@@ -695,6 +701,25 @@ main {
   margin-bottom: 1.1rem;
 }
 
+/* Inline links in the body/bullets — the site's dotted-underline link voice. */
+.freelance-intro a,
+.freelance-body a,
+.shipped-list a {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-text-muted);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.freelance-intro a:hover,
+.freelance-body a:hover,
+.shipped-list a:hover {
+  color: var(--color-text);
+  text-decoration-color: var(--color-highlight);
+}
+
 /* "What I shipped" detail — real bullets, one text colour throughout (the bold
    lead-in adds weight, not a second colour). */
 .shipped-list {
@@ -747,6 +772,7 @@ main {
   main { padding: 3rem 1.25rem; }
   .site-header { gap: 1.1rem; }
   .avatar { width: 68px; height: 68px; }
+  .freelance-avatar { width: 68px; height: 68px; }
   .site-title { font-size: 2.2rem; }
   .site-roles { font-size: 1rem; white-space: normal; }
   .site-intro { margin-bottom: 1.1rem; }
