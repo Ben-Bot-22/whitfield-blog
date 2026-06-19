@@ -1,0 +1,395 @@
+---
+// Shared interactive avatar (slingshot/pinball toy). Used on the homepage and
+// the /hire-me page. The CSS lives in global.css (.avatar, .avatar-streak, etc.).
+---
+
+<img
+  class="avatar"
+  src="/headshot.jpg"
+  alt="Ben Whitfield"
+  width="500"
+  height="500"
+/>
+
+<script>
+  // ——— Avatar slingshot ———
+  // Grab the avatar, drag it back (a capped rubber band that also cocks the
+  // image), release: it launches OPPOSITE the drag, spins, pinballs off the
+  // viewport walls trailing a speed-scaled comet, then springs home upright.
+  // Self-healing — it always returns to its socket, never leaving a gap.
+  const avatar = document.querySelector('.avatar');
+  if (avatar instanceof HTMLImageElement) {
+    // Tunables (px and px/frame at ~60fps; tweak to taste)
+    const MAX_PULL = 140;        // rubber-band limit: max drag offset from centre
+    const MAX_DRAG_TILT = 0.6;   // rad the image cocks at full stretch (~35°)
+    const FLING_THRESHOLD = 8;   // below this pull = tap, not fling
+    const MAX_SPEED = 180;       // px/frame at a full-distance pull (≈ 11000px/s)
+    const SPIN_FROM_SPEED = 0.013; // launch spin per px/frame of throw speed
+    const MAX_ANGVEL = 1.4;      // rad/frame — fast spins, esp. off walls/text
+    const RESTITUTION = 0.9;     // bounciness off walls AND text
+    const DAMPING = 0.992;       // per-frame air drag — keeps speed, many bounces
+    const ANG_DAMPING = 0.99;    // light — it keeps spinning through the flight
+    const SPIN_IMPACT = 0.025;   // spin kick when it slams a wall / text
+    const ANG_SLEW = 0.09;       // homing: slow, momentum-free ease to upright
+    const TAU = Math.PI * 2;
+    const SETTLE_ENERGY = 4;     // (~2 px/frame)² → start springing home
+    const SPRING_K = 0.14;       // homecoming stiffness
+    const SPRING_DAMP = 0.78;
+    // streak (cyan V tail)
+    const STREAK_STOP_SPEED = 3;       // below this the tail is fully gone
+    const STREAK_FULL_SPEED = 70;      // at/above this the tail is at full opacity
+    const STREAK_LEN_PER_SPEED = 4.5;  // tail length px per px/frame of speed
+    const STREAK_MIN_LEN = 26;         // keep a short stub while it's still moving
+    const STREAK_MAX_LEN = 820;        // length cap
+    const STREAK_BASE_HALF = 22;       // half-width of the tail base (< image R=44)
+    const STREAK_ALPHA = 0.5;          // cyan, 50% at peak
+    // pinball (reactive text)
+    const BUMP_PUSH = 12;        // px the text shoves on impact before snapping back
+    const BUMP_COOLDOWN = 300;   // ms before the same text block can react again
+    // each hit advances through the rainbow (matches the name's palette)
+    const HIT_COLORS = ['#ff0059', '#ff7a00', '#ffe600', '#00ff66', '#00e5ff', '#2d7bff', '#b026ff'];
+
+    let state = 'idle'; // idle | dragging | flying | settling
+    let rafId: number | null = null;
+    let lastT = 0;
+    let activePointerId: number | null = null;
+
+    const pos = { x: 0, y: 0 };   // avatar centre, viewport coords
+    const vel = { x: 0, y: 0 };
+    let angle = 0, angVel = 0;
+    let squish = 0;               // 0..1 tap-bounce amount
+    let hits = 0;                 // text hits this fling (drives rainbow + score)
+
+    let homeDocX = 0, homeDocY = 0, R = 44;
+    const grabPointer = { x: 0, y: 0 };
+    const grabPos = { x: 0, y: 0 };
+
+    const homeCx = () => homeDocX - window.scrollX;
+    const homeCy = () => homeDocY - window.scrollY;
+
+    function measureHome() {
+      const r = avatar.getBoundingClientRect();
+      const w = r.width || avatar.offsetWidth || 88;
+      R = w / 2;
+      homeDocX = r.left + window.scrollX + R;
+      homeDocY = r.top + window.scrollY + R;
+    }
+
+    // ——— Speed streak: a cyan V drawn on a full-viewport <canvas> ———
+    // Canvas (not CSS clip-path) so it renders identically in every browser —
+    // no Safari/clip-path/gradient quirks that can silently show nothing.
+    let canvas: HTMLCanvasElement | null = null;
+    let ctx: CanvasRenderingContext2D | null = null;
+    function sizeCanvas() {
+      if (!canvas || !ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(window.innerWidth * dpr);
+      canvas.height = Math.round(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+    }
+    function ensureStreak() {
+      if (canvas) return;
+      canvas = document.createElement('canvas');
+      canvas.className = 'avatar-streak';
+      document.body.appendChild(canvas);
+      ctx = canvas.getContext('2d');
+      sizeCanvas();
+    }
+    // A filled cyan triangle: a narrow base at the avatar centre, apex trailing
+    // `len` px OPPOSITE the velocity. Both opacity AND length scale with speed,
+    // so as it slows the tail fades out and shrinks smoothly (never a hard pop),
+    // while always keeping a short stub as long as it's actually moving.
+    function updateStreak(speed: number, vx: number, vy: number) {
+      if (!ctx || !canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.round(window.innerWidth * dpr)) sizeCanvas();
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (speed < STREAK_STOP_SPEED) return; // basically stopped → no tail
+      const t = Math.min(1, (speed - STREAK_STOP_SPEED) / (STREAK_FULL_SPEED - STREAK_STOP_SPEED));
+      const alpha = STREAK_ALPHA * t;          // fade out as it slows
+      const len = Math.min(STREAK_MAX_LEN, Math.max(STREAK_MIN_LEN, speed * STREAK_LEN_PER_SPEED));
+      const ux = vx / speed, uy = vy / speed;   // unit travel direction
+      const nx = -uy, ny = ux;                   // perpendicular (base spread)
+      const apexX = pos.x - ux * len, apexY = pos.y - uy * len;
+      ctx.fillStyle = `rgba(0, 230, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(pos.x + nx * STREAK_BASE_HALF, pos.y + ny * STREAK_BASE_HALF);
+      ctx.lineTo(pos.x - nx * STREAK_BASE_HALF, pos.y - ny * STREAK_BASE_HALF);
+      ctx.lineTo(apexX, apexY);
+      ctx.closePath();
+      ctx.fill();
+    }
+    function hideStreak() {
+      if (ctx) ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+
+    // ——— Pinball: the avatar bounces off text blocks, which react ———
+    // Generic target set so the toy works on any page that uses <Avatar />:
+    // headings, paragraphs, list items, and definition terms/descriptions.
+    let targetEls: HTMLElement[] | null = null;
+    function getTargets() {
+      if (!targetEls) {
+        targetEls = Array.from(document.querySelectorAll(
+          '.site-nav a, main h1, main h2, main h3, main p, main li, main dt, main dd'
+        )) as HTMLElement[];
+      }
+      return targetEls;
+    }
+    const bumpAt = new WeakMap<HTMLElement, number>();
+    // a rising, fading "+N" tag at the impact point, in the hit's rainbow colour
+    function popScore(x: number, y: number, n: number, color: string) {
+      const tag = document.createElement('div');
+      tag.className = 'hit-score';
+      tag.textContent = '+' + n;
+      tag.style.left = x + 'px';
+      tag.style.top = y + 'px';
+      tag.style.color = color;
+      document.body.appendChild(tag);
+      window.setTimeout(() => tag.remove(), 850);
+    }
+    // shove the text along the ball's travel, flash it the next rainbow colour,
+    // pop the running score, then spring the text back.
+    function onHit(el: HTMLElement, dx: number, dy: number, hx: number, hy: number, now: number) {
+      if (now - (bumpAt.get(el) || 0) < BUMP_COOLDOWN) return;
+      bumpAt.set(el, now);
+      const color = HIT_COLORS[hits % HIT_COLORS.length];
+      hits++;
+      el.style.setProperty('--bump-color', color);
+      el.style.transition = 'transform 0.07s ease-out';
+      el.style.transform = `translate(${dx * BUMP_PUSH}px, ${dy * BUMP_PUSH}px)`;
+      el.classList.add('text-bumped');
+      popScore(hx, hy, hits, color);
+      window.setTimeout(() => {
+        el.style.transition = 'transform 0.55s cubic-bezier(0.2, 1.5, 0.35, 1)';
+        el.style.transform = 'translate(0px, 0px)';
+      }, 80);
+      window.setTimeout(() => { el.classList.remove('text-bumped'); }, 200);
+    }
+    // Collide against the ACTUAL TEXT, not the element's block box. A block like
+    // "Get in touch" fills the whole column, so its box has empty space on the
+    // right; Range.getClientRects() gives one tight rect per line of real text.
+    const hitRange = document.createRange();
+    function collideText(now: number) {
+      const cR = R * 0.95;
+      for (const el of getTargets()) {
+        hitRange.selectNodeContents(el);
+        const lines = hitRange.getClientRects();
+        for (let i = 0; i < lines.length; i++) {
+          const rect = lines[i];
+          if (!rect.width || !rect.height) continue;
+          const qx = Math.max(rect.left, Math.min(pos.x, rect.right));
+          const qy = Math.max(rect.top, Math.min(pos.y, rect.bottom));
+          const dx = pos.x - qx, dy = pos.y - qy;
+          const d2 = dx * dx + dy * dy;
+          if (d2 >= cR * cR) continue;
+          const ivx = vel.x, ivy = vel.y;          // incoming velocity (pre-bounce)
+          const isp = Math.hypot(ivx, ivy) || 1;
+          let d = Math.sqrt(d2), nx, ny;
+          if (d < 0.001) { nx = -ivx / isp; ny = -ivy / isp; } // centre inside rect
+          else { nx = dx / d; ny = dy / d; }
+          pos.x = qx + nx * cR;                     // push out of the text
+          pos.y = qy + ny * cR;
+          const vn = vel.x * nx + vel.y * ny;       // reflect about the normal
+          if (vn < 0) {
+            vel.x = (vel.x - 2 * vn * nx) * RESTITUTION;
+            vel.y = (vel.y - 2 * vn * ny) * RESTITUTION;
+          }
+          angVel += (ivx * ny - ivy * nx) * SPIN_IMPACT * 0.4;
+          if (angVel > MAX_ANGVEL) angVel = MAX_ANGVEL;
+          else if (angVel < -MAX_ANGVEL) angVel = -MAX_ANGVEL;
+          onHit(el, ivx / isp, ivy / isp, qx, qy, now); // contact point qx,qy
+          return; // one hit per collision pass
+        }
+      }
+    }
+    function resolveWalls() {
+      const W = window.innerWidth, H = window.innerHeight;
+      if (pos.x - R < 0)  { pos.x = R;     vel.x = -vel.x * RESTITUTION; angVel += vel.y * SPIN_IMPACT; }
+      if (pos.x + R > W)  { pos.x = W - R; vel.x = -vel.x * RESTITUTION; angVel += vel.y * SPIN_IMPACT; }
+      if (pos.y - R < 0)  { pos.y = R;     vel.y = -vel.y * RESTITUTION; angVel -= vel.x * SPIN_IMPACT; }
+      if (pos.y + R > H)  { pos.y = H - R; vel.y = -vel.y * RESTITUTION; angVel -= vel.x * SPIN_IMPACT; }
+    }
+
+    // Homing rotation — used ONLY while settling into the slot. A damped spring
+    // pulls the angle to the nearest upright (multiple of 2π): the leftover spin
+    // decelerates and resolves into the correct orientation as it finds the
+    // middle. Damped so it eases in without wobbling, and no abrupt snap.
+    function stepRotation(dt: number) {
+      // No momentum here, on purpose: a plain, slow ease to the NEAREST upright.
+      // Monotonic — it can never rotate more than 180° and never speeds up, so
+      // there is no fast end-of-flight spin, just a gentle right-side-up.
+      const upright = Math.round(angle / TAU) * TAU;
+      angle += (upright - angle) * ANG_SLEW * dt;
+    }
+
+    function render() {
+      const s = 1 - squish * 0.08;
+      avatar.style.transform =
+        `translate3d(${pos.x - homeCx()}px, ${pos.y - homeCy()}px, 0) ` +
+        `rotate(${angle}rad) scale(${s})`;
+    }
+
+    function startLoop() {
+      if (rafId !== null) return;
+      lastT = 0;
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function goIdle() {
+      state = 'idle';
+      avatar.classList.remove('is-active');
+      avatar.style.transform = '';
+      hideStreak();
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    function tick(now: number) {
+      const dt = lastT ? Math.min((now - lastT) / 16.67, 2) : 1;
+      lastT = now;
+
+      if (state === 'flying') {
+        vel.x *= DAMPING ** dt;
+        vel.y *= DAMPING ** dt;
+
+        // Sub-step the movement so a fast fling can't tunnel through a wall or a
+        // text block in one big jump — we advance in chunks no longer than ~0.6R
+        // and run collisions at each chunk (continuous collision detection).
+        let remaining = dt;
+        let guard = 0;
+        const maxStep = R * 0.6;
+        while (remaining > 1e-4 && guard++ < 200) {
+          const sp = Math.hypot(vel.x, vel.y);
+          if (sp < 1e-4) break;
+          const frac = sp * remaining > maxStep ? maxStep / (sp * remaining) : 1;
+          const sdt = remaining * frac;
+          pos.x += vel.x * sdt;
+          pos.y += vel.y * sdt;
+          resolveWalls();
+          // skip text hits only while still right on top of home, else bounce
+          if (Math.hypot(pos.x - homeCx(), pos.y - homeCy()) > R * 1.3) collideText(now);
+          remaining -= sdt;
+        }
+
+        // free spin — nothing levels it in flight, so it never wobbles
+        angVel *= ANG_DAMPING ** dt;
+        if (angVel > MAX_ANGVEL) angVel = MAX_ANGVEL;
+        else if (angVel < -MAX_ANGVEL) angVel = -MAX_ANGVEL;
+        angle += angVel * dt;
+
+        const speed = Math.hypot(vel.x, vel.y);
+        updateStreak(speed, vel.x, vel.y);
+        if (vel.x * vel.x + vel.y * vel.y < SETTLE_ENERGY) {
+          state = 'settling';
+          angVel = 0; // kill spin momentum — the slot just slow-rights it, no spin
+        }
+        render();
+      } else if (state === 'settling') {
+        vel.x += (homeCx() - pos.x) * SPRING_K;
+        vel.y += (homeCy() - pos.y) * SPRING_K;
+        vel.x *= SPRING_DAMP;
+        vel.y *= SPRING_DAMP;
+        pos.x += vel.x * dt;
+        pos.y += vel.y * dt;
+        stepRotation(dt); // same gentle auto-level — no hard snap on arrival
+        if (squish > 0) squish = Math.max(0, squish - dt * 0.12);
+        updateStreak(Math.hypot(vel.x, vel.y), vel.x, vel.y);
+
+        const upright = Math.round(angle / TAU) * TAU;
+        const settled =
+          Math.hypot(homeCx() - pos.x, homeCy() - pos.y) < 0.5 &&
+          Math.hypot(vel.x, vel.y) < 0.3 &&
+          Math.abs(angle - upright) < 0.02 && Math.abs(angVel) < 0.02 && squish === 0;
+        if (settled) { angle = 0; goIdle(); return; }
+        render();
+      } else if (state === 'dragging') {
+        hideStreak(); // no tail while held; also clears any stale flight tail
+        render();
+      }
+
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // ——— Pointer handlers ———
+    avatar.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (activePointerId !== null) return; // ignore extra fingers
+      e.preventDefault();
+      measureHome();
+      // if grabbed at rest, start from home; if mid-flight, keep current pos
+      if (state === 'idle') { pos.x = homeCx(); pos.y = homeCy(); angle = 0; }
+      activePointerId = e.pointerId;
+      avatar.setPointerCapture(e.pointerId);
+      grabPointer.x = e.clientX; grabPointer.y = e.clientY;
+      grabPos.x = pos.x; grabPos.y = pos.y;
+      vel.x = vel.y = 0; angVel = 0; squish = 0;
+      hits = 0;
+      state = 'dragging';
+      avatar.classList.add('is-active');
+      ensureStreak();
+      hideStreak(); // clear any leftover tail from a previous fling (no detach)
+      startLoop();
+    });
+
+    avatar.addEventListener('pointermove', (e) => {
+      if (state !== 'dragging' || e.pointerId !== activePointerId) return;
+      const px = e.clientX - grabPointer.x;
+      const py = e.clientY - grabPointer.y;
+      const dist = Math.hypot(px, py) || 1;
+      // asymptotic clamp: tracks ~1:1 early, saturates at MAX_PULL (the band limit)
+      const stretch = MAX_PULL * Math.tanh(dist / MAX_PULL);
+      pos.x = grabPos.x + (px / dist) * stretch;
+      pos.y = grabPos.y + (py / dist) * stretch;
+      // image cocks toward the pull, proportional to band load
+      angle = (px / MAX_PULL) * MAX_DRAG_TILT;
+      if (angle > MAX_DRAG_TILT) angle = MAX_DRAG_TILT;
+      if (angle < -MAX_DRAG_TILT) angle = -MAX_DRAG_TILT;
+    });
+
+    function release(e: PointerEvent) {
+      if (e.pointerId !== activePointerId) return;
+      activePointerId = null;
+      try { avatar.releasePointerCapture(e.pointerId); } catch {}
+      // Slingshot launch: velocity is set purely by HOW FAR the image was pulled
+      // from its home centre, firing back toward (and through) home.
+      const dx = homeCx() - pos.x, dy = homeCy() - pos.y; // image → home (= fling dir)
+      const disp = Math.hypot(dx, dy);
+
+      if (disp < FLING_THRESHOLD) {
+        // tap fallback: a little squish, no fling
+        squish = 1; vel.x = vel.y = 0; angVel = 0;
+        state = 'settling';
+        return;
+      }
+      const ux = dx / disp, uy = dy / disp;
+      // proportional: full pull (disp = MAX_PULL) → MAX_SPEED, half pull → half
+      const speed = Math.min(MAX_SPEED, (disp / MAX_PULL) * MAX_SPEED);
+      vel.x = ux * speed;
+      vel.y = uy * speed;
+      // spin scales with launch speed, rolling in the travel direction
+      angVel = Math.max(-MAX_ANGVEL, Math.min(MAX_ANGVEL, ux * speed * SPIN_FROM_SPEED));
+      hits = 0; // fresh rainbow + score sequence each fling
+      state = 'flying';
+    }
+    avatar.addEventListener('pointerup', release);
+    avatar.addEventListener('pointercancel', release);
+    avatar.addEventListener('lostpointercapture', (e) => {
+      if (e.pointerId === activePointerId && state === 'dragging') release(e);
+    });
+
+    // keep dragging from triggering the browser's native image drag
+    avatar.addEventListener('dragstart', (e) => e.preventDefault());
+
+    let resizeT: number | undefined;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeT);
+      // recompute home + radius; walls read live innerWidth/Height each frame
+      resizeT = window.setTimeout(measureHome, 100);
+    });
+
+    if (avatar.complete) measureHome();
+    else avatar.addEventListener('load', measureHome, { once: true });
+    window.addEventListener('load', measureHome, { once: true });
+  }
+</script>

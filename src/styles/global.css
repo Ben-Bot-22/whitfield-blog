@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,300;1,8..60,400;1,8..60,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400;1,8..60,500&display=swap');
 
 :root {
   --color-bg: #0C0C0C;
@@ -43,6 +43,14 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+/* Uniform link behaviour across the whole site: a link looks like its
+   surrounding text and highlights blue on hover — no underlines, no background
+   fills, no per-context variants. */
+a:hover {
+  color: var(--color-accent);
 }
 
 img {
@@ -56,7 +64,43 @@ img {
 main {
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 5rem 1.5rem 4rem;
+  padding: 2.25rem 1.5rem 4rem;
+}
+
+/* Global nav — a sticky black bar so the links stay legible over any content
+   that scrolls beneath. Blog (= Home) left, Hire Me right; active page in accent. */
+.site-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-nav {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0.95rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.6rem;
+}
+
+.site-nav a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+}
+
+/* explicit because .site-nav a ties the global a:hover on specificity */
+.site-nav a:hover {
+  color: var(--color-accent);
+}
+
+.site-nav a.is-active {
+  color: var(--color-accent);
+  font-weight: 700;
 }
 
 /* ——— Site header (on index) ——— */
@@ -233,51 +277,13 @@ main {
   margin-bottom: 1.25rem;
 }
 
-.site-intro a {
-  color: inherit;
-  text-decoration: underline dotted;
-  text-decoration-color: var(--color-text-muted);
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
-}
-
-.site-intro a:hover {
-  color: var(--color-text);
-  text-decoration-color: var(--color-highlight);
-}
-
-/* Quiet, de-emphasised link to the contact page. Sits close to the intro
-   above it (proximity), with the larger gap below separating it from Projects. */
+/* Quiet link to the contact page, sitting close to the intro above it. */
 .contact-link {
   margin-bottom: 4rem;
 }
 
 .contact-link a {
   font-size: 1rem;
-  color: var(--color-text-muted);
-  transition: color 0.15s ease;
-}
-
-.contact-link a:hover {
-  color: var(--color-text);
-}
-
-/* Hire signal → /about. Deliberately matches .contact-link (same muted colour
-   and arrow): the page keeps "one loud thing" — the rainbow name — so this CTA
-   stays calm and lets position + copy carry it, sitting just above "Get in touch". */
-.available-link {
-  margin-bottom: 0.6rem;
-}
-
-.available-link a {
-  font-size: 1rem;
-  color: var(--color-text-muted);
-  transition: color 0.15s ease;
-}
-
-.available-link a:hover {
-  color: var(--color-text);
 }
 
 /* ——— Sections ——— */
@@ -306,15 +312,6 @@ main {
 .project-item a {
   font-size: 1.1rem;
   font-weight: 500;
-  color: var(--color-text);
-  padding: 0.15em 0.35em;
-  margin: -0.15em -0.35em;
-  border-radius: 3px;
-  transition: background 0.15s ease;
-}
-
-.project-item a:hover {
-  background: var(--color-highlight);
 }
 
 /* ——— Post list ——— */
@@ -329,12 +326,6 @@ main {
 
 .post-item a {
   display: inline;
-}
-
-.post-item a:hover .post-title {
-  background: var(--color-highlight);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
 }
 
 .post-date {
@@ -354,7 +345,7 @@ main {
   font-size: 1.2rem;
   font-weight: 500;
   line-height: 1.35;
-  transition: opacity 0.15s ease;
+  transition: color 0.15s ease;
 }
 
 /* ——— Blog post ——— */
@@ -365,11 +356,6 @@ main {
   font-weight: 300;
   color: var(--color-text-muted);
   margin-bottom: 3rem;
-  transition: color 0.15s ease;
-}
-
-.back-link:hover {
-  color: var(--color-text);
 }
 
 .post-header {
@@ -592,17 +578,8 @@ main {
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Name + avatar reuse the homepage header layout; the avatar is static here
-   (the slingshot physics is homepage-only JS) so it doesn't imply interaction. */
-.freelance-avatar {
-  width: 88px;
-  height: 88px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--color-border);
-}
-
+/* Name + avatar reuse the homepage header layout; the avatar is the shared
+   interactive <Avatar /> (slingshot toy), styled by .avatar in global.css. */
 .freelance-role {
   font-size: 1.15rem;
   color: var(--color-text-muted);
@@ -610,8 +587,7 @@ main {
   margin-bottom: 1rem;
 }
 
-/* Availability + eligibility — a live cyan dot reads "open to work" at a glance;
-   the citizenship/remote facts are the hard filters a recruiter checks early. */
+/* Eligibility — the citizenship / remote facts a recruiter filters on early. */
 .about-status {
   font-size: 0.95rem;
   color: var(--color-text-muted);
@@ -619,26 +595,9 @@ main {
   margin-bottom: 1.6rem;
 }
 
-.about-status .dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  box-shadow: 0 0 7px var(--color-accent);
-  margin-right: 0.6rem;
-  vertical-align: middle;
-  animation: avail-pulse 2.4s ease-in-out infinite;
-}
-
 .about-status .sep {
   opacity: 0.55;
   margin: 0 0.55em;
-}
-
-@keyframes avail-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 230, 255, 0.55); }
-  50%      { box-shadow: 0 0 9px 2px rgba(0, 230, 255, 0.4); }
 }
 
 /* Stack — a labelled grid: category (muted eyebrow) + technologies. Scannable
@@ -676,12 +635,6 @@ main {
 
 .about-actions a {
   font-size: 1rem;
-  color: var(--color-text-muted);
-  transition: color 0.15s ease;
-}
-
-.about-actions a:hover {
-  color: var(--color-text);
 }
 
 /* Body — the lead line is a touch larger; paragraphs read at full text colour. */
@@ -699,25 +652,6 @@ main {
   color: var(--color-text);
   max-width: 38rem;
   margin-bottom: 1.1rem;
-}
-
-/* Inline links in the body/bullets — the site's dotted-underline link voice. */
-.freelance-intro a,
-.freelance-body a,
-.shipped-list a {
-  color: inherit;
-  text-decoration: underline dotted;
-  text-decoration-color: var(--color-text-muted);
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
-}
-
-.freelance-intro a:hover,
-.freelance-body a:hover,
-.shipped-list a:hover {
-  color: var(--color-text);
-  text-decoration-color: var(--color-highlight);
 }
 
 /* "What I shipped" detail — real bullets, one text colour throughout (the bold
@@ -752,18 +686,6 @@ main {
 
 .freelance-readmore a {
   font-size: 1rem;
-  color: var(--color-accent);
-  transition: color 0.15s ease, text-shadow 0.15s ease;
-}
-
-.freelance-readmore a:hover {
-  color: #4df2ff;
-  text-shadow: 0 0 12px var(--color-highlight);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* hold the availability dot steady — its meaning is the colour, not motion */
-  .about-status .dot { animation: none; }
 }
 
 /* ——— Responsive ——— */
@@ -772,7 +694,6 @@ main {
   main { padding: 3rem 1.25rem; }
   .site-header { gap: 1.1rem; }
   .avatar { width: 68px; height: 68px; }
-  .freelance-avatar { width: 68px; height: 68px; }
   .site-title { font-size: 2.2rem; }
   .site-roles { font-size: 1rem; white-space: normal; }
   .site-intro { margin-bottom: 1.1rem; }

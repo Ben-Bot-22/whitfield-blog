@@ -9,6 +9,11 @@ interface Props {
 const { title, description = 'whitfield.dev' } = Astro.props;
 const siteTitle = 'whitfield.dev';
 const fullTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
+
+// Active nav state. "Blog" is really Home (the homepage hosts the blog).
+const path = Astro.url.pathname;
+const onHire = path.startsWith('/hire-me');
+const onBlog = path === '/' || path.startsWith('/blog');
 ---
 
 <!doctype html>
@@ -21,6 +26,12 @@ const fullTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
     <title>{fullTitle}</title>
   </head>
   <body>
+    <header class="site-nav-bar">
+      <nav class="site-nav">
+        <a href="/" class:list={[{ 'is-active': onBlog }]}>Blog</a>
+        <a href="/hire-me" class:list={[{ 'is-active': onHire }]}>Hire Me</a>
+      </nav>
+    </header>
     <main>
       <slot />
     </main>

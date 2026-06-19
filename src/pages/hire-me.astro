@@ -1,29 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
+import Avatar from '../components/Avatar.astro';
 ---
 
 <Base
-  title="Freelance"
+  title="Hire Me"
   description="Ben Whitfield — senior full-stack developer. I design, build, and ship products end-to-end: web, mobile, and the backend behind them. Available for remote contract work."
 >
-  <a href="/" class="back-link">&larr; whitfield.dev</a>
-
   <header class="freelance-head animate-in">
     <div class="site-header">
-      <img
-        class="freelance-avatar"
-        src="/headshot.jpg"
-        alt="Ben Whitfield"
-        width="500"
-        height="500"
-      />
+      <Avatar />
       <h1 class="site-title">Ben Whitfield</h1>
     </div>
     <p class="freelance-role">Senior full-stack developer</p>
 
     <!-- Hire signal: remove "· Seeking remote contract" after the contract phase. -->
     <p class="about-status">
-      <span class="dot" aria-hidden="true"></span>U.S. citizen<span class="sep" aria-hidden="true">·</span>Seeking remote contract
+      U.S. citizen<span class="sep" aria-hidden="true">·</span>Seeking remote contract
     </p>
 
     <dl class="stack-grid">
