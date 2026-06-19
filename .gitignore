@@ -3,3 +3,10 @@ dist/
 .astro/
 .vercel/
 .env
+
+# macOS Finder metadata
+.DS_Store
+
+# Full-size / original headshot backups — kept locally, served version is headshot.png
+public/headshot-black-white.png
+public/headshot-color.jpg
