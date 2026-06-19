@@ -1,0 +1,11 @@
+---
+// Avatar + name, shared by the homepage and the hire-me page.
+import Avatar from './Avatar.astro';
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['site-header', className]}>
+  <Avatar />
+  <h1 class="site-title">Ben Whitfield</h1>
+</div>

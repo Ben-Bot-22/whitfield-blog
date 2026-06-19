@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import Avatar from '../components/Avatar.astro';
+import ProfileHeader from '../components/ProfileHeader.astro';
 import { getCollection } from 'astro:content';
+import '../styles/home.css';
 
 const internalPosts = (await getCollection('blog', ({ data }) => !data.draft))
   .map((p) => ({
@@ -34,10 +35,7 @@ const posts = [...internalPosts, ...externalPosts].sort(
 ---
 
 <Base title="whitfield.dev">
-  <header class="site-header animate-in">
-    <Avatar />
-    <h1 class="site-title">Ben Whitfield</h1>
-  </header>
+  <ProfileHeader class="animate-in" />
   <p class="site-roles animate-in">
     <span>Senior full-stack developer</span>
     <span class="sep" aria-hidden="true">·</span>
@@ -50,7 +48,7 @@ const posts = [...internalPosts, ...externalPosts].sort(
   </p>
 
   <p class="contact-link animate-in">
-    <a href="/contact">Get in touch ↗</a>
+    <a href="/contact">Get in touch</a>
   </p>
 
   <section class="section animate-in">

@@ -5,6 +5,7 @@ import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
+  site: 'https://whitfield.dev',
   integrations: [mdx(), tailwind(), react()],
   adapter: vercel(),
   output: 'static',

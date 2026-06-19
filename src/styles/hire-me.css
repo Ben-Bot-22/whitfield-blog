@@ -1,0 +1,125 @@
+/* Hire-me page (recruiter/client landing). Loaded via hire-me.astro.
+   Class prefix matches the route/file: /hire-me → hire-me.astro → .hire-*. */
+
+/* Credential header: name → role → eligibility → stack → actions, then a
+   hairline rule. Everything a recruiter filters on sits above the prose. */
+.hire-head {
+  padding-bottom: 2.2rem;
+  margin-bottom: 1.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hire-role {
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.005em;
+  margin-bottom: 1rem;
+}
+
+/* Eligibility — the citizenship / remote facts a recruiter filters on early. */
+.hire-status {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+  margin-bottom: 1.6rem;
+}
+
+.hire-status .sep {
+  opacity: 0.55;
+  margin: 0 0.55em;
+}
+
+/* Stack — a labelled grid: category (muted eyebrow) + technologies. Scannable
+   by row so a client can spot the area they care about instantly. */
+.stack-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.55rem 1.6rem;
+  max-width: 40rem;
+  margin-bottom: 1.7rem;
+}
+
+.stack-grid dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding-top: 0.28rem;
+}
+
+.stack-grid dd {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+/* Actions — CV + contact links in the site's standard underline link voice. */
+.hire-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hire-actions a {
+  font-size: 1rem;
+}
+
+/* Body — the lead line is a touch larger; paragraphs read at full text colour. */
+.hire-intro {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  max-width: 36rem;
+  margin-bottom: 2.6rem;
+}
+
+.hire-body {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  max-width: 38rem;
+  margin-bottom: 1.1rem;
+}
+
+/* "What I shipped" detail — real bullets, one text colour throughout (the bold
+   lead-in adds weight, not a second colour). */
+.shipped-list {
+  list-style: disc;
+  padding-left: 1.2rem;
+  max-width: 38rem;
+  margin: 0.4rem 0 1.4rem;
+}
+
+.shipped-list li {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  margin-bottom: 0.85rem;
+  padding-left: 0.2rem;
+}
+
+.shipped-list li::marker {
+  color: var(--color-text-muted);
+}
+
+.shipped-list strong {
+  color: inherit;
+  font-weight: 600;
+}
+
+.hire-readmore {
+  margin-top: 1.3rem;
+}
+
+.hire-readmore a {
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .hire-role { font-size: 1.05rem; }
+  .hire-intro { font-size: 1.05rem; }
+  .stack-grid { gap: 0.5rem 1.1rem; }
+  .hire-actions { gap: 1rem; }
+}

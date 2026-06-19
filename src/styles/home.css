@@ -1,0 +1,93 @@
+/* Homepage-specific styles. Loaded via index.astro. */
+
+.site-roles {
+  /* Sized to fill the fixed 600px content column on one line (web): ~1.1rem at
+     the compressed .sep spacing below lands just inside the column. nowrap keeps
+     it on a single line here; the mobile rule restores wrapping. */
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  letter-spacing: 0.005em;
+  margin-bottom: 1.5rem;
+  white-space: nowrap;
+}
+
+.site-roles .sep {
+  color: var(--color-text-muted);
+  opacity: 0.55;
+  margin: 0 0.3em;
+}
+
+.site-intro {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 34rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Quiet link to the contact page, sitting close to the intro above it. */
+.contact-link {
+  margin-bottom: 4rem;
+}
+
+.contact-link a {
+  font-size: 1rem;
+}
+
+.project-list {
+  list-style: none;
+}
+
+.project-item {
+  margin-bottom: 0.5rem;
+}
+
+.project-item a {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.project-item a:hover {
+  font-weight: 700;
+}
+
+/* ——— Post list ——— */
+
+.post-list {
+  list-style: none;
+}
+
+.post-item {
+  margin-bottom: 2.5rem;
+}
+
+.post-item a {
+  display: inline;
+}
+
+.post-source {
+  margin-left: 0.4rem;
+  opacity: 0.75;
+}
+
+/* Standalone link (its own line) — plain title colour; the date stays muted and
+   the title turns cyan on hover via the base a:hover. */
+.post-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+
+.post-item a:hover .post-title {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .site-roles { font-size: 1rem; white-space: normal; }
+  .site-intro { margin-bottom: 1.1rem; }
+  .contact-link { margin-bottom: 3rem; }
+}

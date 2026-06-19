@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,300;1,8..60,400;1,8..60,500&display=swap');
+
+/* Base: design tokens, reset, links, layout, nav, and bits shared across pages.
+   Loaded on every page via Base.astro. Page-specific styles live in
+   home.css / hire-me.css / contact.css / blog.css; the avatar toy in avatar.css. */
+
+:root {
+  --color-bg: #0C0C0C;
+  --color-text: #E0E0E0;
+  --color-text-muted: #AAA;
+  --color-border: #1E1E1E;
+  --color-highlight: rgba(0, 230, 255, 0.5);
+  --color-accent: #00e6ff;
+  --color-error: #ff6b6b;
+
+  --font: 'Source Serif 4', Georgia, serif;
+  --measure: 600px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 100dvh;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Links — two-tier, unified by a shared cyan hover:
+   - Standalone links (nav, projects, blog titles, CTAs) are designated by their
+     position/role, so they sit in plain text colour with no underline.
+   - In-text links (inside running prose) get a faint underline so they're
+     visible mid-sentence — the opt-in rule below.
+   Both turn cyan on hover. */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+a:hover {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.site-intro a,
+.hire-intro a,
+.hire-body a,
+.shipped-list a,
+.prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-text-muted);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.site-intro a:hover,
+.hire-intro a:hover,
+.hire-body a:hover,
+.shipped-list a:hover,
+.prose a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ——— Layout ——— */
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 4rem;
+}
+
+/* ——— Global nav ——— */
+
+/* A sticky black bar so the links stay legible over content that scrolls
+   beneath. Blog (= Home) left, Hire Me right; active page in accent + bold. */
+.site-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-nav {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0.95rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.6rem;
+}
+
+.site-nav a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+  text-decoration: none; /* nav is designated by position + active state */
+}
+
+.site-nav a:hover {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.site-nav a.is-active {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* ——— Shared header / name ——— */
+
+.site-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.site-title {
+  font-size: 2.7rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  cursor: default;
+  background-image: linear-gradient(
+    90deg,
+    #ff0059, #ff7a00, #ffe600, #00ff66, #00e5ff, #2d7bff, #b026ff,
+    #ff0059, #ff7a00, #ffe600, #00ff66, #00e5ff, #2d7bff, #b026ff, #ff0059
+  );
+  background-size: 200% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: var(--color-text);
+  transition: -webkit-text-fill-color 0.25s ease;
+}
+
+/* Hover sweeps the rainbow */
+.site-title:hover {
+  -webkit-text-fill-color: transparent;
+  animation: rainbow-sweep 1.1s linear infinite;
+}
+
+/* A click locks the name to a solid color, overriding the sweep while hovering.
+   The class is managed per hover-session in JS so re-entering hover sweeps again. */
+.site-title.color-locked {
+  animation: none;
+  -webkit-text-fill-color: var(--lock-color);
+}
+
+@keyframes rainbow-sweep {
+  to { background-position: -100% 0%; }
+}
+
+/* ——— Sections ——— */
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 1.1rem;
+}
+
+/* ——— Shared bits ——— */
+
+.back-link {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--color-text-muted);
+  margin-bottom: 3rem;
+}
+
+/* Post date is used by the homepage post list and the blog-post header. */
+.post-date {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+/* ——— Animations ——— */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+/* ——— Responsive (shared) ——— */
+
+@media (max-width: 640px) {
+  main { padding: 3rem 1.25rem; }
+  .site-header { gap: 1.1rem; }
+  .site-title { font-size: 2.2rem; }
+}
