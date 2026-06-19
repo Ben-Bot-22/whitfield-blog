@@ -54,12 +54,12 @@
   color: var(--color-text);
 }
 
-/* Actions — CV + contact links in the site's standard underline link voice. */
+/* Actions — CV + contact, stacked. */
 .hire-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
 }
 
 .hire-actions a {
@@ -121,5 +121,4 @@
   .hire-role { font-size: 1.05rem; }
   .hire-intro { font-size: 1.05rem; }
   .stack-grid { gap: 0.5rem 1.1rem; }
-  .hire-actions { gap: 1rem; }
 }
