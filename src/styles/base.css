@@ -62,7 +62,9 @@ a:hover {
 }
 
 .site-intro a,
+.contact-link a,
 .hire-status a,
+.hire-actions a,
 .hire-intro a,
 .hire-body a,
 .shipped-list a,
@@ -74,7 +76,9 @@ a:hover {
 }
 
 .site-intro a:hover,
+.contact-link a:hover,
 .hire-status a:hover,
+.hire-actions a:hover,
 .hire-intro a:hover,
 .hire-body a:hover,
 .shipped-list a:hover,

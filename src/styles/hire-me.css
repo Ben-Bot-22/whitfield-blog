@@ -54,12 +54,13 @@
   color: var(--color-text);
 }
 
-/* Actions — CV + contact, stacked. */
+/* Actions — Get in touch, grey so the link inherits muted (cyan on hover). */
 .hire-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.6rem;
+  color: var(--color-text-muted);
 }
 
 .hire-actions a {

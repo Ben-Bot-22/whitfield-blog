@@ -27,9 +27,11 @@
   margin-bottom: 1.25rem;
 }
 
-/* Quiet link to the contact page, sitting close to the intro above it. */
+/* Quiet link to the contact page, sitting close to the intro above it.
+   Grey so the link inherits muted; the cyan hover (base a:hover) overrides it. */
 .contact-link {
   margin-bottom: 4rem;
+  color: var(--color-text-muted);
 }
 
 .contact-link a {
