@@ -14,7 +14,6 @@ import melSpectrogram from '../../assets/blog/building-reazy/mel-spectrogram.png
 1. [What's a Reazy?](#whats-a-reazy)
 2. [The system at a glance](#the-system-at-a-glance)
 3. [The voice models](#the-voice-models)
-   1. [What's a mel-spectrogram?](#whats-a-mel-spectrogram)
 4. [Cold starts](#cold-starts)
 5. [Mobile apps](#mobile-apps)
 6. [The native audio engine](#the-native-audio-engine)
@@ -83,7 +82,12 @@ My first inference design had two inference paths: a fast lane for single reques
 
 I reworked the design to use one inference container with both voices baked in (4 models), one request at a time, scaling horizontally with new containers. The real bottleneck was HiFi-GAN on CPU. I trained using the lighter V2 config and int8-quantized the models to reduce latency. The system became simpler, less expensive, and easier to reason about.
 
-Because text to speech synthesis is a compute heavy workload (CPU compute, paid per request), I added caching to reduce latency. Caching had two layers. I cached at the client level in the browser and on mobile, and I cache with <a href="https://cloud.google.com/storage" target="_blank" rel="noopener">Google Cloud Storage</a> from my Cloud Run inference service. Serving the same audio from cache cuts those costs and reduces latency. A cache hit returns in 5–20ms versus ~100ms to synthesize.
+Because text to speech synthesis is a compute heavy workload (CPU compute, paid per request), I added caching to reduce latency. Caching had two layers. I cached at the client level in the browser and on mobile, and I cache with <a href="https://cloud.google.com/storage" target="_blank" rel="noopener">Google Cloud Storage</a> from my Cloud Run inference service. I also added a post-processing compression step to the inference service. Serving the same audio from cache cuts those costs and reduces latency. A cache hit returns in 5–20ms versus ~100ms to synthesize.
+
+<figure>
+  <img src="/images/building-reazy/graph-g4-mp3-size.svg" alt="Audio size per 10-second clip: raw WAV is 430 KB, 64 kbps MP3 is 80 KB — about 81% smaller" />
+  <figcaption>Storing audio as MP3 (64 kbps mono) is ~81% smaller than raw WAV.</figcaption>
+</figure>
 
 ## Cold starts
 

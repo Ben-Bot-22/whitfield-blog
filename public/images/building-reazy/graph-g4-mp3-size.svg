@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 170" role="img" aria-label="Audio size per 10-second clip: raw WAV 430 KB versus 64 kbps MP3 80 KB, about 81% smaller">
+  <style>
+    text{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    .lbl{font-size:13px;fill:#f4f4f5} .val{font-size:12.5px;fill:#aab2bf} .ann{font-size:12px;fill:#aab2bf}
+  </style>
+  <text class="lbl" x="120" y="52" text-anchor="end">WAV</text>
+  <rect x="130" y="34" width="600" height="30" rx="3" fill="#9aa4b2"/>
+  <text x="722" y="54" text-anchor="end" style="font-size:12.5px;font-weight:700;fill:#0C0C0C">430 KB</text>
+  <text class="lbl" x="120" y="104" text-anchor="end">MP3 64k</text>
+  <rect x="130" y="86" width="112" height="30" rx="3" fill="#6cb796"/>
+  <text class="val" x="250" y="106">80 KB</text>
+  <text class="ann" x="430" y="146" text-anchor="middle">≈ 81% smaller · per 10-second clip</text>
+</svg>
