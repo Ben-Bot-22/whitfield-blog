@@ -13,7 +13,7 @@ const fullTitle = title === siteTitle ? siteTitle : `${title} — ${siteTitle}`;
 // Active nav state. "Blog" is really Home (the homepage hosts the blog).
 const path = Astro.url.pathname;
 const onHire = path.startsWith('/hire-me');
-const onBlog = path === '/' || path.startsWith('/blog');
+const onHome = path === '/' || path.startsWith('/blog');
 
 const siteOrigin = Astro.site ?? new URL('https://whitfield.dev');
 const canonical = new URL(path, siteOrigin).href;
@@ -47,7 +47,7 @@ const ogImage = new URL('/og.png', siteOrigin).href;
   <body>
     <header class="site-nav-bar">
       <nav class="site-nav">
-        <a href="/" class:list={[{ 'is-active': onBlog }]}>Blog</a>
+        <a href="/" class:list={[{ 'is-active': onHome }]}>Home</a>
         <a href="/hire-me" class:list={[{ 'is-active': onHire }]}>Hire Me</a>
       </nav>
     </header>

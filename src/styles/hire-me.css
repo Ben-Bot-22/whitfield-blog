@@ -111,11 +111,11 @@
 }
 
 .hire-readmore {
-  margin-top: 1.3rem;
-}
-
-.hire-readmore a {
   font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  max-width: 38rem;
+  margin-bottom: 1.1rem;
 }
 
 @media (max-width: 640px) {

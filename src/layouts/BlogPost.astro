@@ -15,13 +15,13 @@ const formattedDate = pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  timeZone: 'UTC',
 });
 ---
 
 <Base title={title} description={description}>
   <article>
     <header class="post-header animate-in">
-      <a href="/" class="back-link">&larr; whitfield.dev</a>
       <span class="post-date">{formattedDate}</span>
       <h1>{title}</h1>
       {image && <img src={image} alt={title} class="hero-image" />}

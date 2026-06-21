@@ -67,6 +67,7 @@ a:hover {
 .hire-actions a,
 .hire-intro a,
 .hire-body a,
+.hire-readmore a,
 .shipped-list a,
 .prose a {
   text-decoration: underline;
@@ -81,6 +82,7 @@ a:hover {
 .hire-actions a:hover,
 .hire-intro a:hover,
 .hire-body a:hover,
+.hire-readmore a:hover,
 .shipped-list a:hover,
 .prose a:hover {
   text-decoration-color: var(--color-accent);
