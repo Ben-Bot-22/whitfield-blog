@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" role="img" aria-label="Timeline of fix attempts">
+  <style>
+    svg{--ink:#f4f4f5;--muted:#aab2bf;--line:#2f343c;--accent:#7aa7ff;--warn:#f87171;--good:#6cb796;--amber:#d6ad5b;--slate:#9aa4b2}
+    text{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    .lbl{font-size:13px;fill:var(--ink)} .val{font-size:12.5px;fill:var(--muted)} .ann{font-size:12px;fill:var(--muted)}
+  </style>
+  <line x1="48" y1="130" x2="700" y2="130" stroke="var(--line)"/>
+  <line x1="60" y1="125" x2="60" y2="104" stroke="var(--slate)"/>
+  <text class="ann" x="60" y="82" text-anchor="middle">Jul 16</text>
+  <text class="lbl" x="60" y="98" text-anchor="middle" style="font-size:11px">auth init</text>
+  <circle cx="60" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="144" y1="135" x2="144" y2="156" stroke="var(--slate)"/>
+  <text class="lbl" x="144" y="170" text-anchor="middle" style="font-size:11px">lazy-load</text>
+  <text class="ann" x="144" y="184" text-anchor="middle">Jul 16</text>
+  <circle cx="144" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="228" y1="125" x2="228" y2="104" stroke="var(--slate)"/>
+  <text class="ann" x="228" y="82" text-anchor="middle">Jul 17</text>
+  <text class="lbl" x="228" y="98" text-anchor="middle" style="font-size:11px">dynamic imports</text>
+  <circle cx="228" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="312" y1="135" x2="312" y2="156" stroke="var(--slate)"/>
+  <text class="lbl" x="312" y="170" text-anchor="middle" style="font-size:11px">refactor reader</text>
+  <text class="ann" x="312" y="184" text-anchor="middle">Jul 20</text>
+  <circle cx="312" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="396" y1="125" x2="396" y2="104" stroke="var(--slate)"/>
+  <text class="ann" x="396" y="82" text-anchor="middle">Jul 20</text>
+  <text class="lbl" x="396" y="98" text-anchor="middle" style="font-size:11px">chunk size</text>
+  <circle cx="396" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="480" y1="135" x2="480" y2="156" stroke="var(--slate)"/>
+  <text class="lbl" x="480" y="170" text-anchor="middle" style="font-size:11px">markdown bypass</text>
+  <text class="ann" x="480" y="184" text-anchor="middle">Jul 21</text>
+  <circle cx="480" cy="130" r="5" fill="var(--slate)"/>
+  <line x1="564" y1="125" x2="564" y2="104" stroke="var(--amber)"/>
+  <text class="ann" x="564" y="82" text-anchor="middle">Jul 22</text>
+  <text x="564" y="98" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--amber)">“it’s the regex”</text>
+  <circle cx="564" cy="130" r="6" fill="var(--amber)"/>
+  <line x1="648" y1="135" x2="648" y2="156" stroke="var(--good)"/>
+  <text x="648" y="170" text-anchor="middle" style="font-size:11px;font-weight:700;fill:var(--good)">moved to cloud</text>
+  <text class="ann" x="648" y="184" text-anchor="middle">Jul 23</text>
+  <circle cx="648" cy="130" r="6" fill="var(--good)"/>
+  <text class="ann" x="48" y="214">● wrong guess</text>
+  <text class="ann" x="170" y="214" style="fill:var(--amber)">● cause named</text>
+  <text class="ann" x="300" y="214" style="fill:var(--good)">● fix shipped</text>
+</svg>

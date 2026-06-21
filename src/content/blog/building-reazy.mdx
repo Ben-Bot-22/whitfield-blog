@@ -1,0 +1,187 @@
+---
+title: "Building Reazy: a cross-platform text-to-speech app"
+description: "How I built Reazy, a cross-platform text-to-speech app — voice models, cold starts on Cloud Run, native audio engines, a virtualized reader, and surviving a surprise Apple account termination."
+pubDate: 2026-06-20
+draft: false
+image: "/images/building-reazy/graph-g0-system.svg"
+---
+
+import { Image } from 'astro:assets';
+import melSpectrogram from '../../assets/blog/building-reazy/mel-spectrogram.png';
+
+## Contents
+
+1. [What's a Reazy?](#whats-a-reazy)
+2. [The system at a glance](#the-system-at-a-glance)
+3. [The voice models](#the-voice-models)
+   1. [What's a mel-spectrogram?](#whats-a-mel-spectrogram)
+4. [Cold starts](#cold-starts)
+5. [Mobile apps](#mobile-apps)
+6. [The native audio engine](#the-native-audio-engine)
+7. [Frontend performance](#frontend-performance)
+8. [Surprise Apple account termination](#surprise-apple-account-termination)
+9. [What this taught me](#what-this-taught-me)
+
+---
+
+## What's a Reazy?
+
+Late 2022 — I'd just walked away from mobile game development after shipping a dozen hyper-casual prototypes that didn’t pass the very high Meta ads testing bar, and I was teaching myself <a href="https://react.dev/" target="_blank" rel="noopener">React</a> and machine learning, looking for a real project to build. I had discovered text-to-speech for dry reading material (machine learning books). I had been hearing about AI progress with neural networks since 2015, and I wanted to actually make one. So I decided to make the best text-to-speech app I could. That turned into **over three years of solo development**, building the app I eventually named <a href="https://www.reazy.pro/" target="_blank" rel="noopener">Reazy</a> (“read” + “easy”).
+
+In this post, I’ll walk you through the project and provide the development story. I will also reveal some of the tradeoffs I made along the way.
+
+## The system at a glance
+
+<strong>One monorepo (<a href="https://pnpm.io/" target="_blank" rel="noopener">pnpm</a>) ships three clients from shared code</strong> — a web app, a Chrome extension, and iOS/Android via <a href="https://capacitorjs.com/" target="_blank" rel="noopener">Capacitor</a> (React in a WebView). I used <a href="https://firebase.google.com/" target="_blank" rel="noopener">Firebase</a> for users, documents, and billing, and a separate Python inference service on <a href="https://cloud.google.com/run" target="_blank" rel="noopener">Google Cloud Run</a> for the model inference. Billing spans three sources — <a href="https://stripe.com/" target="_blank" rel="noopener">Stripe</a> on the web, <a href="https://developer.apple.com/in-app-purchase/" target="_blank" rel="noopener">Apple in-app purchases</a> on iOS, and <a href="https://developer.android.com/google/play/billing" target="_blank" rel="noopener">Google Play billing</a> on Android — which I reconciled into one record.
+
+## The voice models
+
+After experimenting with open source repos and reading a lot of papers on <a href="https://arxiv.org/" target="_blank" rel="noopener">arXiv</a>, I **adapted two strong, well-known open-source models** — <a href="https://arxiv.org/abs/2006.06873" target="_blank" rel="noopener">FastPitch</a> (acoustic model: text → mel-spectrogram) and <a href="https://arxiv.org/abs/2010.05646" target="_blank" rel="noopener">HiFi-GAN</a> (vocoder: mel-spectrogram → audio).
+
+### What's a mel-spectrogram?
+
+Sound is a wave, but my text-to-speech doesn't work on the raw waveform — it relies on a mel-spectrogram as an intermediate representation of sound. A mel-spectrogram is a picture of sound: time on one axis, frequency on the other, loudness as color. The "mel" part is a scale that spaces frequencies the way human ears perceive pitch — roughly even at low frequencies, then compressing roughly logarithmically as they climb. That's why we can tell 500 Hz (the midrange of a human voice) from 1,000 Hz (a sharp whistle) but can barely distinguish 10,000 from 10,500 (cymbal-shimmer).
+
+<Image src={melSpectrogram} alt="Mel-spectrogram: time on the x-axis, mel-frequency on the y-axis, loudness as color" />
+
+
+The model implementation required three pieces: the training-data pipeline, training the voices, and the production serving layer.
+
+The data pipeline ingests text, runs a heavy normalization pass (numbers, dates, currency, symbols), and segments it into utterances using a bell curve length distribution rather than naive splitting — so the dataset isn't biased toward only-short or only-long clips. It extracts mel-spectrograms, emits an <a href="https://keithito.com/LJ-Speech-Dataset/" target="_blank" rel="noopener">LJSpeech</a>-format dataset, and runs a crash-recoverable quality analyzer that flags anomalous clips.
+
+<figure>
+  <img src="/images/building-reazy/gaussian-bell-curve.svg" alt="Bell-curve distribution of clip lengths used when segmenting training utterances" />
+  <figcaption>Clip lengths are sampled along a bell curve — so the dataset isn’t biased toward only-short or only-long clips.</figcaption>
+</figure>
+
+LJSpeech format is a plain text file, one line per clip, pipe-delimited (id|text), beside a folder of matching .wav files. It came from a famous open source speech dataset.
+
+```
+LJ-0001|Printing differs from most arts and crafts
+LJ-0002|in being comparatively modern.
+```
+
+I trained the voices on two RTX 3090s I bought used in summer 2023. I originally looked into renting GPUs for training in the cloud but it was very expensive at the time due to high demand for GPUs.
+
+For production, I used Google Cloud Run to host the models. The service auto-scales containers which works for bursty text to speech inference workloads. The great thing about FastPitch was that it was efficient. FastPitch is non-autoregressive — it generates the whole mel-spectrogram in one parallel pass instead of one step at a time, so it's fast (the paper says >900× real-time).
+
+HiFi-GAN comes in three sizes (V1/V2/V3); the tradeoff is audio quality vs computation time. I started on V1, the highest quality, but inference was too slow on CPU. I had to downgrade to V2, which cut the generator's channel width from 512 to 128 — far less compute for an acceptable quality drop, and much lower latency. Warm inference lands around 100ms after int8 quantization (<a href="https://pytorch.org/docs/stable/jit.html" target="_blank" rel="noopener">TorchScript</a>).
+
+"Channels" are the width of each convolution layer (how many feature maps it computes in parallel) — more channels = more audio detail but more compute.
+
+Table from the HiFi-GAN paper (Tables 1 & 5):
+
+| variant | channels | params | CPU speed (× real-time) | quality          |
+| ------- | -------- | ------ | ----------------------- | ---------------- |
+| V1      | 512      | 13.9M  | ×1.43                   | best (MOS ~4.36) |
+| **V2**  | **128**  | 0.9M   | ×9.74                   | good             |
+| V3      | 256      | 1.5M   | ×13.44                  | untested         |
+
+The win was V1 → V2: ~7× faster on CPU for a small quality cost.
+
+My first inference design had two inference paths: a fast lane for single requests, and a batched lane that grouped up to 3 requests in a 50ms window to keep costs low. Containers must be stateless, so each batched container is pinned to a single voice. The idea was to use the fast lane to quickly process audio ahead of the user’s reading position and efficiently stay ahead with the batched path. It worked, but covering both paths meant keeping three containers warm. Paying to keep containers warm was more expensive than the processing efficiencies saved. I had over-engineered it.
+
+I reworked the design to use one inference container with both voices baked in (4 models), one request at a time, scaling horizontally with new containers. The real bottleneck was HiFi-GAN on CPU. I trained using the lighter V2 config and int8-quantized the models to reduce latency. The system became simpler, less expensive, and easier to reason about.
+
+Because text to speech synthesis is a compute heavy workload (CPU compute, paid per request), I added caching to reduce latency. Caching had two layers. I cached at the client level in the browser and on mobile, and I cache with <a href="https://cloud.google.com/storage" target="_blank" rel="noopener">Google Cloud Storage</a> from my Cloud Run inference service. Serving the same audio from cache cuts those costs and reduces latency. A cache hit returns in 5–20ms versus ~100ms to synthesize.
+
+## Cold starts
+
+A cold container takes 40–45 seconds to boot, because the containers are beefy to startup. (see the graph).
+
+Even with 1 warm container, the problem is they can only serve 1 request at a time b/c inference on CPU is a heavy workload. So when a user opens a document or web page, I need a burst of several containers to generate the audio ahead of the user’s reading position (like how YouTube downloads video bytes ahead of where you are currently watching to keep the experience smooth without buffering breaks).
+
+I mitigated cold start latency with a startup probe. If a user is detected it will warm up several containers simultaneously and programmatically raise the number of `min-instances` multiplied by the number of concurrent users.
+
+<figure>
+  <img src="/images/building-reazy/graph-g1-coldstart.svg" alt="Request latency: cache hit 5–20ms, warm synthesis ~100ms, cache miss 130–200ms, and a cold start of ~42,500ms shown on a broken axis" />
+  <figcaption>Every path is in the milliseconds — until a cold start, which runs ~400× longer at 40–45 seconds.</figcaption>
+</figure>
+
+## Mobile apps
+
+Reazy's mobile app is a hybrid — React in a WebView via Capacitor, not a native
+mobile app.
+
+The cross-platform capability from Capacitor is amazing! I am a small team of one
+shipping a large project with multiple platform interfaces to develop. Capacitor allowed
+me to use one codebase to share both web and mobile interfaces. That is a huge efficiency
+win but it wasn't quite free.
+
+Reazy started as a browser extension and then a web app. When I wrapped the React code
+in Capacitor and opened it on my iPhone, it froze every time.
+
+I chased the obvious culprits: I lazy-loaded the text normalizer, moved it behind dynamic
+imports, refactored the document reader, retuned chunk sizes. Nothing fixed it.
+
+Why didn't I just profile it? I tried. It didn't actually crash — it hung, with no error; the main thread was blocked, freezing the app (iOS browser). The timing logs I added never even printed, because the thread locked before they could flush. I started systematically debugging, turning different parts of the code on and off and then testing. I bypassed the text processing entirely and playback worked!
+
+Before a sentence is sent for synthesis, its text runs through a normalization pass — roughly 30 regex transformations that turn `$4.50`, `Dr.`, `2025`, and emoji into the words you'd actually _say_. On a desktop it worked smoothly: the whole pass ran in 1–10ms. On a resource constrained iPhone it ran synchronously on the main thread for every sentence, and that was enough to lock the UI. The heaviest steps weren't the obvious-looking currency and number rules; they were Unicode normalization and character-by-character transliteration.
+
+To fix it, I simply moved the normalization into the cloud container. The client now
+sends the raw text for the inference container to normalize. It kept the code in sync for
+mobile and web and the workload fit there better conceptually anyway.
+
+<figure>
+  <img src="/images/building-reazy/graph-g6-mobile-timeline.svg" alt="Timeline of the week spent chasing the mobile freeze, July 16–23, 2025, with the real cause flagged at the end" />
+  <figcaption>The week of debugging (Jul 16–23, 2025).</figcaption>
+</figure>
+
+## The native audio engine
+
+On web and the extension, playback already worked well. My engine (play.ts) ran two <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio" target="_blank" rel="noopener">HTML5 audio elements</a> — one playing, one preloading the next to avoid playback gaps at higher listening speeds. The problem was that the whole engine is JavaScript — and a WebView suspends JavaScript in the background.
+
+Why can’t a WebView running JavaScript work as an audio engine (HTML5 audio elements) on mobile? Text to speech should work like a podcast or audio when you switch off your screen, but the Capacitor WebView suspends all JavaScript when the app goes to the background. The lock screen shows "play" while nothing plays, because no JavaScript is alive to update it.
+
+For these reasons, I had to develop <strong>custom native plugins — Swift (<a href="https://developer.apple.com/documentation/avfoundation/avplayer" target="_blank" rel="noopener">AVPlayer</a>) on iOS, Kotlin (<a href="https://developer.android.com/media/media3/exoplayer" target="_blank" rel="noopener">ExoPlayer</a>) on Android</strong>. Capacitor was the bridge to React. Native audio runs at the OS level: it keeps playing when the WebView's JavaScript is frozen, registers as a first-class audio session (lock-screen controls, now-playing metadata, audio-focus handling for calls and alarms), and on Android lives in a foreground service so the OS permits background playback.
+
+The audio (mp3) files that inference sends are short clips. There were 50–200ms gaps caused by loading latency between audio segments. To fix the short playback gaps, the plugins use two audio players — a current player and a next player preloaded with the following segment. A timer polls the current player's position every 20ms, and when the current clip has ≤50ms left it starts the next player before the current one ends, so the handoff is seamless. (AVPlayer and ExoPlayer don't hand you a precise "50ms from the end" callback you can trust — their end observers fire too coarsely or too late — so the 20ms poll is the trigger: I watch currentTime against duration and fire the next player myself when the remaining time crosses the threshold.) Two players means more memory, but the clips are short and the tradeoff was worth it. This is the same dual-player, early-start design play.ts used on web.
+
+I now maintain the same gapless engine in three places — JavaScript, Swift, and Kotlin. The complexity is warranted because this is a required feature for the app to have a good user experience.
+
+## Frontend performance
+
+During development, large documents — 300+ pages — caused jumps during scrolling that felt janky. I addressed this by using a **virtualized render**: only the visible chunks of the document are in the DOM at any time (<a href="https://tanstack.com/virtual" target="_blank" rel="noopener">TanStack Virtual</a>).
+
+Virtualization is easy for a static blog post. It's more complicated when the same document is being read aloud, highlighted, and auto-scrolled — because the content you scroll away from is exactly the content the voice still needs.
+
+The first fight was keeping text to speech and virtualization from working against each other. Virtualization's whole job is to delete off-screen chunks; text to speech’s whole job is to keep reading them. Early on that collision was everywhere: reading stopped at the end of a chunk, scrolling ahead would load future chunks and start reading them out of order, and highlighting broke whenever a sentence spanned a chunk boundary. I fixed it by always keeping three chunks live — previous, current, and next — so the voice never falls off the edge of the rendered window, and by moving chunk loading and disposal into a document state machine, so the race conditions had one place to be resolved instead of scattering across components.
+
+The second fight was a subtler bug. The per-chunk loading used an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank" rel="noopener">IntersectionObserver</a> to render each chunk as it scrolled into view — and it had a failure that only showed up when using a navigation table of contents feature. It allowed jumping to a future section like a distant chapter. It kept landing on partially loaded or blank space.
+
+The root cause was a circular dependency:
+
+1. An unprocessed chunk renders at 0 height (no content yet)
+2. A 0-height element can't intersect the viewport
+3. So the observer never fires
+4. So the content never loads
+5. So it stays 0 height
+
+Scrolling works because neighboring chunks nudged the next chunk into view; but jumping to a far-away chunk did not. A chunk with no height can never trigger the event that would give it height.
+
+I rewrote the data flow to have a parent component read the virtualizer's visible range (plus a buffer) in <a href="https://react.dev/reference/react/useLayoutEffect" target="_blank" rel="noopener">useLayoutEffect</a>, processing chunk content synchronously before paint — so a chunk always has content by the time it renders. I removed the observers and it eliminated the issue. This new setup removed a whole class of timing bugs (and shrank the row component from ~90 lines to ~20).
+
+## Surprise Apple account termination
+
+Apple has to review your app and approve it meets their guidelines before they let you put it on the store. On my third round of revisions, I got an email at 5pm on a Thursday — **Apple terminated my developer account for "fraudulent conduct," with no explanation.**
+
+I had used a new product from <a href="https://www.anthropic.com/" target="_blank" rel="noopener">Anthropic</a>, <a href="https://claude.com/product/cowork" target="_blank" rel="noopener">Claude Cowork</a>, on <a href="https://appstoreconnect.apple.com/" target="_blank" rel="noopener">App Store Connect</a> (app submission for developers) the day before to help me resubmit. Cowork could click buttons in the browser on App Store Connect, and it did. What I didn't know was that Apple had just rolled out aggressive new fraud-detection tooling — and automated browser actions on App Store Connect tripped it. An innocent automation flagged as fraud, with immediate termination and no warning. I couldn’t even access App Store Connect anymore.
+
+The stakes were asymmetric and brutal. iOS is ~55–60% of US smartphone users — losing
+it means losing most of the students this tool is for. The US reinstatement rate is 2.8% (<a href="https://www.apple.com/legal/more-resources/docs/2024-App-Store-Transparency-Report.pdf" target="_blank" rel="noopener">Apple's 2024 App Store Transparency Report</a>). On top of that, there is no appeal process. Your only paths are to make enough public noise that a human at Apple re-reviews your case, or to hire a law firm and litigate.
+
+I researched with Claude to make a plan of action. There were stories of this happening to other developers. Here were the main parts of the plan: I wrote a blog post documenting the termination and emailed `tcook@apple.com`, Apple’s open public relations address. The executive relations staff at that address had the power to straighten it out. The public post gave the email more weight. I had a contingency plan ready. I paid the $99 developer fee again to have my sister set up a developer account as a fallback.
+
+**Nine days later I was reinstated.**
+
+I wrote the full story <a href="https://www.reazy.pro/blog/apple-terminated-developer-account-no-explanation" target="_blank" rel="noopener">here</a> and wrote a playbook for reinstatement <a href="https://www.reazy.pro/blog/150000-apple-developers-terminated-2-8-reinstated-heres-how-i-beat-the-odds" target="_blank" rel="noopener">here</a>.
+
+## What this taught me
+
+This seemingly simple app was much more complicated to build than I initially thought, but it took me from low web developer capability to **a seasoned, grizzled full-stack developer**. What made it a journey was the tradeoff decisions, difficult bugs along the way, and the constant learning with spanning different clients and tools.
+
+After years building the reading tool I wanted to use, in 2026, at age 37, I was diagnosed with inattentive ADHD. All these years I have had good reasons for being a slow reader and wanting this to exist.
+
+I grew as a developer across the stack. I’m convinced building with the technologies and wrangling them together is the best way to learn development. One specific takeaway for me is to spend more time researching and planning on the front side before implementing, but on the other hand, the issues and interactions between packages I was using for the first time were hard to predict and not documented. Sometimes, the only way to make progress is to jump in with the tools and see where it goes wrong. It’s an assured way to have your understanding grow to meet the issue!
+
+Thank you for reading!

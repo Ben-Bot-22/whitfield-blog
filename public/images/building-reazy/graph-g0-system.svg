@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 398" role="img" aria-label="System architecture diagram">
+  <style>
+    svg{--ink:#f4f4f5;--muted:#aab2bf;--accent:#7aa7ff;--warn:#f87171;--good:#6cb796;--amber:#d6ad5b;--slate:#9aa4b2}
+    text{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    .lbl{font-size:13px;fill:var(--ink)} .val{font-size:12.5px;fill:var(--muted)} .ann{font-size:12px;fill:var(--muted)}
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--slate)"/></marker>
+  </defs>
+  <rect x="40" y="36" width="200" height="64" rx="9" fill="none" stroke="var(--accent)"/>
+  <text class="lbl" x="140" y="64" text-anchor="middle" style="font-weight:600">Web app</text>
+  <text class="val" x="140" y="84" text-anchor="middle">React + Vite</text>
+  <rect x="280" y="36" width="200" height="64" rx="9" fill="none" stroke="var(--accent)"/>
+  <text class="lbl" x="380" y="64" text-anchor="middle" style="font-weight:600">Chrome extension</text>
+  <text class="val" x="380" y="84" text-anchor="middle">in-browser TTS</text>
+  <rect x="520" y="36" width="200" height="64" rx="9" fill="none" stroke="var(--accent)"/>
+  <text class="lbl" x="620" y="58" text-anchor="middle" style="font-weight:600">Mobile · iOS / Android</text>
+  <text class="val" x="620" y="75" text-anchor="middle">Capacitor (React WebView)</text>
+  <text class="val" x="620" y="91" text-anchor="middle">+ native audio: Swift / Kotlin</text>
+  <line x1="140" y1="100" x2="140" y2="128" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <line x1="380" y1="100" x2="380" y2="128" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <line x1="620" y1="100" x2="620" y2="128" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <rect x="40" y="130" width="680" height="38" rx="9" fill="none" stroke="var(--slate)"/>
+  <text class="lbl" x="380" y="154" text-anchor="middle">pnpm monorepo — shared <tspan style="font-weight:600">tts-core</tspan> (TypeScript): queue · caching · speech controller</text>
+  <line x1="200" y1="168" x2="200" y2="208" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <line x1="560" y1="168" x2="560" y2="208" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <text class="ann" x="206" y="190">data · auth</text>
+  <text class="ann" x="566" y="190">audio requests</text>
+  <rect x="40" y="210" width="320" height="92" rx="9" fill="none" stroke="var(--amber)"/>
+  <text class="lbl" x="200" y="234" text-anchor="middle" style="font-weight:600">Firebase</text>
+  <text class="val" x="200" y="255" text-anchor="middle">Auth · Firestore — users, documents</text>
+  <text class="val" x="200" y="273" text-anchor="middle">unified subscription record</text>
+  <text class="val" x="200" y="291" text-anchor="middle">(client reads one path)</text>
+  <rect x="400" y="210" width="320" height="92" rx="9" fill="none" stroke="var(--good)"/>
+  <text class="lbl" x="560" y="234" text-anchor="middle" style="font-weight:600">Google Cloud Run — Python inference</text>
+  <text class="val" x="560" y="255" text-anchor="middle">FastPitch → HiFi-GAN (CPU, int8)</text>
+  <text class="val" x="560" y="273" text-anchor="middle">batch + fast lane · warm pool</text>
+  <text class="val" x="560" y="291" text-anchor="middle">autoscale on burst</text>
+  <rect x="40" y="340" width="320" height="46" rx="9" fill="none" stroke="var(--accent)"/>
+  <text class="lbl" x="200" y="361" text-anchor="middle" style="font-weight:600">Billing sources → webhooks</text>
+  <text class="val" x="200" y="379" text-anchor="middle">Stripe · Apple IAP · Google Play</text>
+  <line x1="200" y1="340" x2="200" y2="304" stroke="var(--slate)" marker-end="url(#ah)"/>
+  <text class="ann" x="206" y="324">reconcile</text>
+  <rect x="400" y="340" width="320" height="46" rx="9" fill="none" stroke="var(--good)"/>
+  <text class="lbl" x="560" y="361" text-anchor="middle" style="font-weight:600">Google Cloud Storage</text>
+  <text class="val" x="560" y="379" text-anchor="middle">cross-user audio cache (MP3)</text>
+  <line x1="560" y1="304" x2="560" y2="338" stroke="var(--slate)" marker-end="url(#ah)" marker-start="url(#ah)"/>
+  <text class="ann" x="566" y="324">read / write</text>
+</svg>

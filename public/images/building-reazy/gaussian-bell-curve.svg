@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" role="img" aria-label="Gaussian distribution of clip lengths">
+  <style>
+    text{font:13px -apple-system,"Segoe UI",Roboto,Arial,sans-serif;fill:#f4f4f5}
+    .m{fill:#aab2bf;font-size:12px}
+  </style>
+  <text x="300" y="28" text-anchor="middle" style="font-weight:600">Clip lengths sampled from a Gaussian</text>
+  <line x1="60" y1="230" x2="540" y2="230" stroke="#3a3f47"/>
+  <path d="M60,230 C 180,230 235,70 300,62 C 365,70 420,230 540,230 Z" fill="#7aa7ff" fill-opacity="0.16"/>
+  <path d="M60,230 C 180,230 235,70 300,62 C 365,70 420,230 540,230" fill="none" stroke="#7aa7ff" stroke-width="2.5"/>
+  <line x1="300" y1="62" x2="300" y2="230" stroke="#7aa7ff" stroke-dasharray="4 4"/>
+  <text class="m" x="60" y="250" text-anchor="middle">min length</text>
+  <text class="m" x="300" y="250" text-anchor="middle">midpoint (mean)</text>
+  <text class="m" x="540" y="250" text-anchor="middle">max length</text>
+  <text class="m" x="300" y="270" text-anchor="middle">most clips land near the middle; few are very short or very long</text>
+</svg>
