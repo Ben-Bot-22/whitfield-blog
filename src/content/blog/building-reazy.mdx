@@ -27,7 +27,7 @@ import melSpectrogram from '../../assets/blog/building-reazy/mel-spectrogram.png
 
 Late 2022 — I'd just walked away from mobile game development after shipping a dozen hyper-casual prototypes that didn’t pass the very high Meta ads testing bar, and I was teaching myself <a href="https://react.dev/" target="_blank" rel="noopener">React</a> and machine learning, looking for a real project to build. I had discovered text-to-speech for dry reading material (machine learning books). I had been hearing about AI progress with neural networks since 2015, and I wanted to actually make one. So I decided to make the best text-to-speech app I could. That turned into **over three years of solo development**, building the app I eventually named <a href="https://www.reazy.pro/" target="_blank" rel="noopener">Reazy</a> (“read” + “easy”).
 
-In this post, I’ll walk you through the project and provide the development story. I will also reveal some of the tradeoffs I made along the way.
+In this post, I’ll walk you through the project and share the development story. I’ll also cover some of the tradeoffs I made along the way.
 
 ## The system at a glance
 
@@ -62,7 +62,7 @@ LJ-0002|in being comparatively modern.
 
 I trained the voices on two RTX 3090s I bought used in summer 2023. I originally looked into renting GPUs for training in the cloud but it was very expensive at the time due to high demand for GPUs.
 
-For production, I used Google Cloud Run to host the models. The service auto-scales containers which works for bursty text to speech inference workloads. The great thing about FastPitch was that it was efficient. FastPitch is non-autoregressive — it generates the whole mel-spectrogram in one parallel pass instead of one step at a time, so it's fast (the paper says >900× real-time).
+For production, I used Google Cloud Run to host the models. The service auto-scales containers which works for bursty text-to-speech inference workloads. The great thing about FastPitch was that it was efficient. FastPitch is non-autoregressive — it generates the whole mel-spectrogram in one parallel pass instead of one step at a time, so it's fast (the paper says >900× real-time).
 
 HiFi-GAN comes in three sizes (V1/V2/V3); the tradeoff is audio quality vs computation time. I started on V1, the highest quality, but inference was too slow on CPU. I had to downgrade to V2, which cut the generator's channel width from 512 to 128 — far less compute for an acceptable quality drop, and much lower latency. Warm inference lands around 100ms after int8 quantization (<a href="https://pytorch.org/docs/stable/jit.html" target="_blank" rel="noopener">TorchScript</a>).
 
@@ -82,7 +82,7 @@ My first inference design had two inference paths: a fast lane for single reques
 
 I reworked the design to use one inference container with both voices baked in (4 models), one request at a time, scaling horizontally with new containers. The real bottleneck was HiFi-GAN on CPU. I trained using the lighter V2 config and int8-quantized the models to reduce latency. The system became simpler, less expensive, and easier to reason about.
 
-Because text to speech synthesis is a compute heavy workload (CPU compute, paid per request), I added caching to reduce latency. Caching had two layers. I cached at the client level in the browser and on mobile, and I cache with <a href="https://cloud.google.com/storage" target="_blank" rel="noopener">Google Cloud Storage</a> from my Cloud Run inference service. I also added a post-processing compression step to the inference service. Serving the same audio from cache cuts those costs and reduces latency. A cache hit returns in 5–20ms versus ~100ms to synthesize.
+Because text-to-speech synthesis is a compute-heavy workload (CPU compute, paid per request), I added caching to reduce latency. Caching had two layers. I cached at the client level in the browser and on mobile, and I cache with <a href="https://cloud.google.com/storage" target="_blank" rel="noopener">Google Cloud Storage</a> from my Cloud Run inference service. I also added a post-processing compression step to the inference service. Serving the same audio from cache cuts those costs and reduces latency. A cache hit returns in 5–20ms versus ~100ms to synthesize.
 
 <figure>
   <img src="/images/building-reazy/graph-g4-mp3-size.svg" alt="Audio size per 10-second clip: raw WAV is 430 KB, 64 kbps MP3 is 80 KB — about 81% smaller" />
@@ -91,9 +91,9 @@ Because text to speech synthesis is a compute heavy workload (CPU compute, paid 
 
 ## Cold starts
 
-A cold container takes 40–45 seconds to boot, because the containers are beefy to startup. (see the graph).
+A cold container takes 40–45 seconds to boot, because the container images are heavy to start.
 
-Even with 1 warm container, the problem is they can only serve 1 request at a time b/c inference on CPU is a heavy workload. So when a user opens a document or web page, I need a burst of several containers to generate the audio ahead of the user’s reading position (like how YouTube downloads video bytes ahead of where you are currently watching to keep the experience smooth without buffering breaks).
+Even with 1 warm container, the problem is they can only serve 1 request at a time because inference on CPU is a heavy workload. So when a user opens a document or web page, I need a burst of several containers to generate the audio ahead of the user’s reading position (like how YouTube downloads video bytes ahead of where you are currently watching to keep the experience smooth without buffering breaks).
 
 I mitigated cold start latency with a startup probe. If a user is detected it will warm up several containers simultaneously and programmatically raise the number of `min-instances` multiplied by the number of concurrent users.
 
@@ -120,7 +120,7 @@ imports, refactored the document reader, retuned chunk sizes. Nothing fixed it.
 
 Why didn't I just profile it? I tried. It didn't actually crash — it hung, with no error; the main thread was blocked, freezing the app (iOS browser). The timing logs I added never even printed, because the thread locked before they could flush. I started systematically debugging, turning different parts of the code on and off and then testing. I bypassed the text processing entirely and playback worked!
 
-Before a sentence is sent for synthesis, its text runs through a normalization pass — roughly 30 regex transformations that turn `$4.50`, `Dr.`, `2025`, and emoji into the words you'd actually _say_. On a desktop it worked smoothly: the whole pass ran in 1–10ms. On a resource constrained iPhone it ran synchronously on the main thread for every sentence, and that was enough to lock the UI. The heaviest steps weren't the obvious-looking currency and number rules; they were Unicode normalization and character-by-character transliteration.
+Before a sentence is sent for synthesis, its text runs through a normalization pass — roughly 30 regex transformations that turn `$4.50`, `Dr.`, `2025`, and emoji into the words you'd actually _say_. On a desktop it worked smoothly: the whole pass ran in 1–10ms. On a resource-constrained iPhone it ran synchronously on the main thread for every sentence, and that was enough to lock the UI. The heaviest steps weren't the obvious-looking currency and number rules; they were Unicode normalization and character-by-character transliteration.
 
 To fix it, I simply moved the normalization into the cloud container. The client now
 sends the raw text for the inference container to normalize. It kept the code in sync for
@@ -135,11 +135,11 @@ mobile and web and the workload fit there better conceptually anyway.
 
 On web and the extension, playback already worked well. My engine (play.ts) ran two <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio" target="_blank" rel="noopener">HTML5 audio elements</a> — one playing, one preloading the next to avoid playback gaps at higher listening speeds. The problem was that the whole engine is JavaScript — and a WebView suspends JavaScript in the background.
 
-Why can’t a WebView running JavaScript work as an audio engine (HTML5 audio elements) on mobile? Text to speech should work like a podcast or audio when you switch off your screen, but the Capacitor WebView suspends all JavaScript when the app goes to the background. The lock screen shows "play" while nothing plays, because no JavaScript is alive to update it.
+Why can’t a WebView running JavaScript work as an audio engine (HTML5 audio elements) on mobile? Text-to-speech should work like a podcast or audio when you switch off your screen, but the Capacitor WebView suspends all JavaScript when the app goes to the background. The lock screen shows "play" while nothing plays, because no JavaScript is alive to update it.
 
 For these reasons, I had to develop <strong>custom native plugins — Swift (<a href="https://developer.apple.com/documentation/avfoundation/avplayer" target="_blank" rel="noopener">AVPlayer</a>) on iOS, Kotlin (<a href="https://developer.android.com/media/media3/exoplayer" target="_blank" rel="noopener">ExoPlayer</a>) on Android</strong>. Capacitor was the bridge to React. Native audio runs at the OS level: it keeps playing when the WebView's JavaScript is frozen, registers as a first-class audio session (lock-screen controls, now-playing metadata, audio-focus handling for calls and alarms), and on Android lives in a foreground service so the OS permits background playback.
 
-The audio (mp3) files that inference sends are short clips. There were 50–200ms gaps caused by loading latency between audio segments. To fix the short playback gaps, the plugins use two audio players — a current player and a next player preloaded with the following segment. A timer polls the current player's position every 20ms, and when the current clip has ≤50ms left it starts the next player before the current one ends, so the handoff is seamless. (AVPlayer and ExoPlayer don't hand you a precise "50ms from the end" callback you can trust — their end observers fire too coarsely or too late — so the 20ms poll is the trigger: I watch currentTime against duration and fire the next player myself when the remaining time crosses the threshold.) Two players means more memory, but the clips are short and the tradeoff was worth it. This is the same dual-player, early-start design play.ts used on web.
+The audio (MP3) files that inference sends are short clips. There were 50–200ms gaps caused by loading latency between audio segments. To fix the short playback gaps, the plugins use two audio players — a current player and a next player preloaded with the following segment. A timer polls the current player's position every 20ms, and when the current clip has ≤50ms left it starts the next player before the current one ends, so the handoff is seamless. (AVPlayer and ExoPlayer don't hand you a precise "50ms from the end" callback you can trust — their end observers fire too coarsely or too late — so the 20ms poll is the trigger: I watch currentTime against duration and fire the next player myself when the remaining time crosses the threshold.) Two players means more memory, but the clips are short and the tradeoff was worth it. This is the same dual-player, early-start design play.ts used on web.
 
 I now maintain the same gapless engine in three places — JavaScript, Swift, and Kotlin. The complexity is warranted because this is a required feature for the app to have a good user experience.
 
@@ -149,7 +149,7 @@ During development, large documents — 300+ pages — caused jumps during scrol
 
 Virtualization is easy for a static blog post. It's more complicated when the same document is being read aloud, highlighted, and auto-scrolled — because the content you scroll away from is exactly the content the voice still needs.
 
-The first fight was keeping text to speech and virtualization from working against each other. Virtualization's whole job is to delete off-screen chunks; text to speech’s whole job is to keep reading them. Early on that collision was everywhere: reading stopped at the end of a chunk, scrolling ahead would load future chunks and start reading them out of order, and highlighting broke whenever a sentence spanned a chunk boundary. I fixed it by always keeping three chunks live — previous, current, and next — so the voice never falls off the edge of the rendered window, and by moving chunk loading and disposal into a document state machine, so the race conditions had one place to be resolved instead of scattering across components.
+The first fight was keeping text-to-speech and virtualization from working against each other. Virtualization's whole job is to delete off-screen chunks; text-to-speech’s whole job is to keep reading them. Early on that collision was everywhere: reading stopped at the end of a chunk, scrolling ahead would load future chunks and start reading them out of order, and highlighting broke whenever a sentence spanned a chunk boundary. I fixed it by always keeping three chunks live — previous, current, and next — so the voice never falls off the edge of the rendered window, and by moving chunk loading and disposal into a document state machine, so the race conditions had one place to be resolved instead of scattering across components.
 
 The second fight was a subtler bug. The per-chunk loading used an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API" target="_blank" rel="noopener">IntersectionObserver</a> to render each chunk as it scrolled into view — and it had a failure that only showed up when using a navigation table of contents feature. It allowed jumping to a future section like a distant chapter. It kept landing on partially loaded or blank space.
 
@@ -182,7 +182,7 @@ I wrote the full story <a href="https://www.reazy.pro/blog/apple-terminated-deve
 
 ## What this taught me
 
-This seemingly simple app was much more complicated to build than I initially thought, but it took me from low web developer capability to **a seasoned, grizzled full-stack developer**. What made it a journey was the tradeoff decisions, difficult bugs along the way, and the constant learning with spanning different clients and tools.
+This seemingly simple app was much more complicated to build than I initially thought, but it took me from a beginner web developer to **a seasoned, grizzled full-stack developer**. What made it a journey was the tradeoff decisions, difficult bugs along the way, and the constant learning that came from spanning different clients and tools.
 
 After years building the reading tool I wanted to use, in 2026, at age 37, I was diagnosed with inattentive ADHD. All these years I have had good reasons for being a slow reader and wanting this to exist.
 
