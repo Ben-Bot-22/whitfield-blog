@@ -219,6 +219,20 @@
   border-left: 3px solid var(--color-accent);
 }
 
+/* Banner variant — the preview image spans the full width across the top, with
+   the body beneath it. For social cards (1200×630) meant to be shown whole. */
+.og-card--banner {
+  flex-direction: column;
+}
+
+.og-card--banner .og-card-img {
+  flex: none;
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  border-right: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
 /* Compact / discreet variant — no description, full-width line, and the image
    shown whole (16:9 inset thumbnail, not a cropped slice). For the Claude Code
    link that used to be an inline "here". */
