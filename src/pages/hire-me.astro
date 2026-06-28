@@ -10,42 +10,55 @@ import '../styles/hire-me.css';
 >
   <header class="hire-head animate-in">
     <ProfileHeader />
-    <p class="hire-role">Senior full-stack developer</p>
+    <p class="hire-role">Senior Full-Stack Engineer · AI-Native</p>
 
     <!-- Hire signal: the citizenship / work-arrangement facts a recruiter filters on. -->
     <p class="hire-status">
-      US citizen<span class="sep" aria-hidden="true">·</span>Remote or onsite<span class="sep" aria-hidden="true">·</span>Will relocate<span class="sep" aria-hidden="true">·</span><a href="/cv/ben-whitfield-cv.pdf" target="_blank" rel="noopener">Download CV (PDF)</a>
+      US citizen<span class="sep" aria-hidden="true">·</span>Remote (open to onsite)<span class="sep" aria-hidden="true">·</span>Will relocate<span class="sep" aria-hidden="true">·</span>Available now
     </p>
 
-    <dl class="stack-grid">
-      <dt>Frontend</dt>
-      <dd>React · TypeScript · JavaScript</dd>
-      <dt>Backend</dt>
-      <dd>Node.js · Python · REST APIs · Firestore (NoSQL) · Google Cloud Storage</dd>
-      <dt>Cloud</dt>
-      <dd>Google Cloud Platform · Firebase · Docker</dd>
-      <dt>Mobile</dt>
-      <dd>Capacitor (iOS + Android) · custom native audio engine (Swift, Kotlin)</dd>
-      <dt>ML / AI</dt>
-      <dd>PyTorch · custom model training · production inference</dd>
-      <dt>LLM / GenAI</dt>
-      <dd>Large Language Models · Generative AI · LLM Integration (Anthropic API) · Prompt Engineering</dd>
-      <dt>Testing</dt>
-      <dd>Playwright · Vitest</dd>
-    </dl>
-
-    <p class="hire-actions">
-      <a href="/contact">Get in touch</a>
+    <!-- CTA row: text links, same treatment as the status line. -->
+    <p class="hire-status">
+      <a href="https://www.reazy.pro/" target="_blank" rel="noopener">Try Reazy ↗</a><span class="sep" aria-hidden="true">·</span><a href="https://github.com/Ben-Bot-22" target="_blank" rel="noopener">GitHub ↗</a><span class="sep" aria-hidden="true">·</span><a href="/cv/ben-whitfield-cv.pdf" target="_blank" rel="noopener">Download CV</a>
     </p>
   </header>
 
-  <p class="hire-intro animate-in" style="animation-delay: 80ms;">
-    I'm a full-stack developer who designs, builds, and ships products end-to-end
-    — web, mobile, and the backend behind them — solo, in production, for real
-    users.
-  </p>
+  {/* Walkthrough video — commented out until Ben supplies the YouTube embed URL.
+      When ready, drop the embed in here, e.g.:
+      <iframe id="walkthrough" style="width:100%; aspect-ratio:16/9; border:0;"
+        src="https://www.youtube.com/embed/VIDEO_ID" title="2-minute walkthrough"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen loading="lazy"></iframe>
+  */}
 
   <section class="section animate-in" style="animation-delay: 140ms;">
+    <h2 class="section-title">How I work — AI-native</h2>
+    <ul class="shipped-list process-list">
+      <li>Claude Code is my daily, my primary development mode.</li>
+      <li>
+        Rapid Prototype
+        <ul>
+          <li>Spending time upfront to research with AI and clearly specify the requirements.</li>
+          <li>Claude researches existing issues with the mix of technologies we are planning to use.</li>
+          <li>Favorite prompt: Ask me questions until you are highly confident in what needs to be done.</li>
+          <li>Claude adds in deployment breaks and commits at checkpoints as part of the plan. We iterate and test in small increments to minimize complexity and keep debugging fast.</li>
+          <li>I challenge assumptions and ask what data is missing.</li>
+        </ul>
+      </li>
+      <li>Claude executes and we test as we go.</li>
+      <li>I spot check the code and catch issues at our testing checkpoints.</li>
+    </ul>
+  </section>
+
+  <a class="og-card og-card--compact animate-in" style="animation-delay: 170ms;" href="/blog/is-claude-code-actually-better-1820-hours-of-data">
+    <img class="og-card-img" src="/images/claude-code-impact-hero.png" alt="" loading="lazy" width="2752" height="1536" />
+    <span class="og-card-body">
+      <span class="og-card-title">Is Claude Code Actually Better? 1,820 Hours of Data</span>
+      <span class="og-card-host">whitfield.dev ↗</span>
+    </span>
+  </a>
+
+  <section class="section animate-in" style="animation-delay: 200ms;">
     <h2 class="section-title">Experience</h2>
     <p class="hire-body">
       I built <a href="https://www.reazy.pro/" target="_blank" rel="noopener">Reazy</a>, a cross-platform text-to-speech SaaS, from nothing to
@@ -85,16 +98,59 @@ import '../styles/hire-me.css';
       TypeScript monorepo with a shared core library and automated tests. Model
       inference ran as a separate Python service on Google Cloud Run.
     </p>
-    <p class="hire-readmore">
-      I wrote up the full technical story <a href="/blog/building-reazy" target="_blank" rel="noopener">here</a>.
-    </p>
+
+    <div class="work-cards">
+      <a class="og-card og-card--noimg" href="https://www.reazy.pro/" target="_blank" rel="noopener">
+        <span class="og-card-body">
+          <span class="og-card-title">Reazy — Reading is hard. Listening is easy.</span>
+          <span class="og-card-desc">Listen to any article, PDF, or document with natural AI voices. 60% less than competitors.</span>
+          <span class="og-card-host">reazy.pro ↗</span>
+        </span>
+      </a>
+      <a class="og-card" href="/blog/building-reazy">
+        <img class="og-card-img" src="/images/building-reazy/graph-g0-system.svg" alt="" loading="lazy" />
+        <span class="og-card-body">
+          <span class="og-card-title">Building Reazy: a cross-platform text-to-speech app</span>
+          <span class="og-card-desc">How I built Reazy — voice models, cold starts on Cloud Run, native audio engines, a virtualized reader, and surviving a surprise Apple account termination.</span>
+          <span class="og-card-host">whitfield.dev ↗</span>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section animate-in" style="animation-delay: 260ms;">
+    <h2 class="section-title">Skills</h2>
+    <dl class="stack-grid">
+      <dt>AI / LLM</dt>
+      <dd>Generative AI · Anthropic API · agentic systems · prompt engineering</dd>
+      <dt>ML</dt>
+      <dd>PyTorch · custom model training · production inference</dd>
+      <dt>Frontend</dt>
+      <dd>React · TypeScript · JavaScript</dd>
+      <dt>Backend</dt>
+      <dd>Node.js · Python/FastAPI · REST · Firestore (NoSQL) · Google Cloud Storage</dd>
+      <dt>Cloud</dt>
+      <dd>GCP · Firebase · Docker · Cloud Run · CI/CD</dd>
+      <dt>Mobile</dt>
+      <dd>Capacitor (iOS + Android) · custom native audio engine (Swift, Kotlin)</dd>
+      <dt>Testing</dt>
+      <dd>Playwright · Vitest</dd>
+    </dl>
+    <p class="hire-body">I am a dynamic and versatile developer. I will learn and conquer any skill needed for a project.</p>
+  </section>
+
+  <section class="section animate-in" style="animation-delay: 320ms;">
+    <h2 class="section-title">Background</h2>
     <p class="hire-body">
       Before software, I spent a decade as an operations-research analyst and
       economist for the U.S. Air Force, including at the Pentagon. I started
       teaching myself to build software in 2015 (<a href="https://see.stanford.edu/Course" target="_blank" rel="noopener">Stanford's open courseware</a>,
-      <a href="https://www.theodinproject.com/" target="_blank" rel="noopener">The Odin Project</a>) and went full-time in 2021: game development, a deep dive into
-      system design and the web, then 3.5 years building and running Reazy
-      end-to-end.
+      <a href="https://www.theodinproject.com/" target="_blank" rel="noopener">The Odin Project</a>) and went full-time in 2021: trying out mobile game development, a deep dive
+      into web technology, followed by building and running Reazy end-to-end.
     </p>
   </section>
+
+  <p class="hire-status animate-in" style="animation-delay: 380ms;">
+    <a href="/contact">Get in touch</a><span class="sep" aria-hidden="true">·</span><a href="https://github.com/Ben-Bot-22" target="_blank" rel="noopener">GitHub ↗</a><span class="sep" aria-hidden="true">·</span><a href="/cv/ben-whitfield-cv.pdf" target="_blank" rel="noopener">Download CV</a>
+  </p>
 </Base>

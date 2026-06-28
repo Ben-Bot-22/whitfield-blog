@@ -18,10 +18,11 @@
 
 /* Eligibility — the citizenship / remote facts a recruiter filters on early. */
 .hire-status {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
   color: var(--color-text-muted);
-  letter-spacing: 0.01em;
-  margin-bottom: 1.6rem;
+  letter-spacing: 0.015em;
+  margin-bottom: 1.5rem;
 }
 
 .hire-status .sep {
@@ -118,8 +119,142 @@
   margin-bottom: 1.1rem;
 }
 
+/* AI-native process — top steps reuse the shipped-list look; the nested level
+   (sub-steps under a step) is tighter and muted so it reads as detail. */
+.process-list > li {
+  margin-bottom: 1rem;
+}
+
+.process-list ul {
+  list-style: circle;
+  margin: 0.55rem 0 0.2rem;
+  padding-left: 1.25rem;
+}
+
+.process-list ul li {
+  font-size: 0.96rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  margin-bottom: 0.4rem;
+}
+
+/* OG link cards — a preview image bleeds flush to the left edge; the link's own
+   title + description + host sit on the right. Hairline border that lifts and
+   lights cyan on hover. Used for the live product, the build write-up, and the
+   Claude Code piece. */
+.work-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 38rem;
+  margin-top: 0.6rem;
+}
+
+.og-card {
+  display: flex;
+  align-items: stretch;
+  font-weight: 400;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-bg);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.og-card:hover {
+  border-color: var(--color-accent);
+  background: #111;
+  transform: translateY(-2px);
+  font-weight: 400; /* cancel global a:hover bold so the card doesn't reflow */
+}
+
+.og-card-img {
+  flex: 0 0 140px;
+  width: 140px;
+  align-self: stretch;
+  object-fit: cover;
+  border-right: 1px solid var(--color-border);
+  background: #0a0a0a;
+}
+
+.og-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  padding: 0.9rem 1.1rem;
+  min-width: 0; /* let the clamped description shrink instead of overflowing */
+}
+
+.og-card-title {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: var(--color-text);
+}
+
+.og-card-desc {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.og-card-host {
+  margin-top: auto;
+  padding-top: 0.3rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+.og-card:hover .og-card-host {
+  color: var(--color-accent);
+}
+
+/* No-image variant (e.g. Reazy, whose own OG image 404s): a cyan accent edge
+   stands in for the image so it stays visually in rhythm with the image cards. */
+.og-card--noimg {
+  border-left: 3px solid var(--color-accent);
+}
+
+/* Compact / discreet variant — no description, full-width line, and the image
+   shown whole (16:9 inset thumbnail, not a cropped slice). For the Claude Code
+   link that used to be an inline "here". */
+.og-card--compact {
+  max-width: 38rem;
+  margin-top: 1.4rem;
+  margin-bottom: 2.6rem; /* space before the Experience section */
+  align-items: center;
+}
+
+.og-card--compact .og-card-img {
+  flex: 0 0 200px;
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  align-self: center;
+  margin: 0.7rem 0 0.7rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.og-card--compact .og-card-body {
+  padding: 0.7rem 1.1rem;
+}
+
+.og-card--compact .og-card-title {
+  font-size: 0.98rem;
+}
+
 @media (max-width: 640px) {
+  .og-card-img { flex-basis: 104px; width: 104px; }
+  .og-card--compact .og-card-img { flex-basis: 140px; width: 140px; }
   .hire-role { font-size: 1.05rem; }
   .hire-intro { font-size: 1.05rem; }
   .stack-grid { gap: 0.5rem 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card:hover { transform: none; }
 }
