@@ -383,8 +383,12 @@ if (avatar instanceof HTMLImageElement) {
     const dx = homeCx() - pos.x, dy = homeCy() - pos.y; // image → home (= fling dir)
     const disp = Math.hypot(dx, dy);
 
-    if (disp < FLING_THRESHOLD) {
-      // tap fallback: a little squish, no fling
+    // Tap vs fling is decided by whether the POINTER actually dragged — not by how
+    // far the avatar sits from home. So a click on the avatar mid-flight reads as
+    // a tap and springs it home, instead of re-slinging it from the catch point.
+    const moved = Math.hypot(e.clientX - grabPointer.x, e.clientY - grabPointer.y);
+    if (moved < FLING_THRESHOLD || disp < FLING_THRESHOLD) {
+      // tap: a little squish, then spring home (kills any in-flight velocity)
       squish = 1; vel.x = vel.y = 0; angVel = 0;
       state = 'settling';
       return;
