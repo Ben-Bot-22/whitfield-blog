@@ -241,7 +241,7 @@ if (avatar instanceof HTMLImageElement) {
   // can never offset the home measurement. Intentionally runs even under
   // reduced-motion: it's a few-px affordance whose whole purpose is to draw the
   // eye to the toy.
-  const TWITCH_MIN = 4000, TWITCH_MAX = 6000; // ms between twitches (randomised)
+  const TWITCH_MIN = 3000, TWITCH_MAX = 5000; // ms between twitches (randomised)
   const TWITCH_PX = 6;
   let twitchTimer: number | undefined;
 
