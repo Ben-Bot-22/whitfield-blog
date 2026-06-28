@@ -39,6 +39,7 @@ if (avatar instanceof HTMLImageElement) {
   let rafId: number | null = null;
   let lastT = 0;
   let activePointerId: number | null = null;
+  let hovering = false; // pointer is over the avatar — pauses the idle twitch
 
   const pos = { x: 0, y: 0 };   // avatar centre, viewport coords
   const vel = { x: 0, y: 0 };
@@ -229,6 +230,45 @@ if (avatar instanceof HTMLImageElement) {
     avatar.style.transform = '';
     hideStreak();
     if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    if (!hovering) scheduleTwitch(); // resume the attention twitch once at rest
+  }
+
+  // ——— Idle twitch ———
+  // A tiny, occasional upward bob so the avatar advertises it's grabbable — the
+  // toy is easy to miss. Fires at a random, well-spaced cadence, and ONLY while
+  // truly at rest (idle, not hovered). Driven by a CSS transition (not the
+  // physics rAF loop), and fully cleared the instant the avatar is grabbed so it
+  // can never offset the home measurement. Intentionally runs even under
+  // reduced-motion: it's a few-px affordance whose whole purpose is to draw the
+  // eye to the toy.
+  const TWITCH_MIN = 4000, TWITCH_MAX = 6000; // ms between twitches (randomised)
+  const TWITCH_PX = 6;
+  let twitchTimer: number | undefined;
+
+  function cancelTwitch() {
+    window.clearTimeout(twitchTimer);
+    avatar.style.transition = '';
+    avatar.style.transform = '';
+  }
+
+  function scheduleTwitch() {
+    window.clearTimeout(twitchTimer);
+    twitchTimer = window.setTimeout(
+      doTwitch,
+      TWITCH_MIN + Math.random() * (TWITCH_MAX - TWITCH_MIN),
+    );
+  }
+
+  function doTwitch() {
+    if (state !== 'idle' || hovering) { scheduleTwitch(); return; } // skip a beat
+    avatar.style.transition = 'transform 0.11s ease-out';
+    avatar.style.transform = `translateY(-${TWITCH_PX}px)`; // quick bob up
+    window.setTimeout(() => {
+      if (state !== 'idle' || hovering) return;
+      avatar.style.transition = 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      avatar.style.transform = '';            // springy settle back home
+    }, 120);
+    scheduleTwitch();                          // queue the next one
   }
 
   function tick(now: number) {
@@ -302,6 +342,7 @@ if (avatar instanceof HTMLImageElement) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (activePointerId !== null) return; // ignore extra fingers
     e.preventDefault();
+    cancelTwitch(); // drop any twitch transform so home is measured at true rest
     measureHome();
     // if grabbed at rest, start from home; if mid-flight, keep current pos
     if (state === 'idle') { pos.x = homeCx(); pos.y = homeCy(); angle = 0; }
@@ -367,6 +408,13 @@ if (avatar instanceof HTMLImageElement) {
   // keep dragging from triggering the browser's native image drag
   avatar.addEventListener('dragstart', (e) => e.preventDefault());
 
+  // pause the twitch on hover (the CSS hover-lift takes over); resume on leave
+  avatar.addEventListener('pointerenter', () => { hovering = true; cancelTwitch(); });
+  avatar.addEventListener('pointerleave', () => {
+    hovering = false;
+    if (state === 'idle') scheduleTwitch();
+  });
+
   let resizeT: number | undefined;
   window.addEventListener('resize', () => {
     window.clearTimeout(resizeT);
@@ -377,4 +425,6 @@ if (avatar instanceof HTMLImageElement) {
   if (avatar.complete) measureHome();
   else avatar.addEventListener('load', measureHome, { once: true });
   window.addEventListener('load', measureHome, { once: true });
+
+  scheduleTwitch(); // start the idle attention twitch
 }
