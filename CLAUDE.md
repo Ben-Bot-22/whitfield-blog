@@ -36,6 +36,5 @@ Personal site / blog at **whitfield.dev**. Astro 5 + React 19 islands + Tailwind
 The homepage name and avatar carry deliberate, self-contained interactions implemented as **inline vanilla-JS `<script>` in `index.astro`** (no framework):
 - **Name** (`.site-title`): hover = rainbow sweep, click = lock to next palette color. CSS owns the visual states; JS manages per-hover lock/cycle/reset logic.
 - **Avatar slingshot/pinball**: drag-to-fling physics — the avatar launches, spins, bounces off viewport walls and off the actual text (via `Range.getClientRects`), trails a canvas comet, scores hits, then springs home. Heavily commented with tunable constants at the top of the IIFE.
-- **`prefers-reduced-motion`** is respected (Ben develops with macOS Reduce Motion ON): CSS softens the avatar hover, and the fling degrades to a gentle low-speed launch with no spin/trail. Check this gate before debugging "missing"/"broken" animations.
 
 Design rationale for keeping interactions minimal ("one loud thing, everything else calm" — audience is potential clients) lives in `ai_docs/interactive-design.md` and `ai_docs/avatar-slingshot.md`. Consult these before changing the homepage feel.
